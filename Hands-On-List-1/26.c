@@ -2,8 +2,7 @@
     1. Use some executable program 
     2. Pass some input to an executable program. (for example execute an executable of `$./a.out name`) */
 
-// Import for `execl` library function
-#include <unistd.h>
+#include <unistd.h> // Import for `execl` library function
 
 void main()
 {

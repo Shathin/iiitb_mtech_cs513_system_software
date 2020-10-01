@@ -1,6 +1,6 @@
-// Question : Write a program to get maximum and minimum real time priority.
+// Question : Write a program to get maximum and minimum real time priority
 
-#include <sched.h> // Import for
+#include <sched.h> // Import for `sched_get_priority_*` functions
 #include <stdio.h> // Import for `printf`
 
 void main()

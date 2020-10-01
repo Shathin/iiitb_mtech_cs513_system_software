@@ -1,7 +1,6 @@
 /*
     Question: Write a program to perform Record locking. 
     1. Implement write lock 
-
     Create three records in a file. Whenever you access a particular record, first lock it then modify/access to avoid race condition.
 */
 

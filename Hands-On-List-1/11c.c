@@ -1,13 +1,10 @@
 // Question: Write a program to open a file, duplicate the file descriptor and append the file with both the descriptors and check whether the file is updated properly or not using `fcntl`
 
-// Imports for `open` system call
-#include<sys/types.h>
-#include<sys/stat.h>
-#include<fcntl.h>
-// Additional import required for `fcntl` system call
-#include<unistd.h>
-// Import required for `perror` function
-#include<stdio.h>
+#include <sys/types.h> // Import for `open` system call
+#include <sys/stat.h>  // Import for `open` system call
+#include <fcntl.h>     // Import for `open`, `fcntl` system call
+#include <unistd.h>    // Import for `fcntl` system call
+#include <stdio.h>     // Import required for `perror` & `printf` function
 
 void main(int argc, char *argv[])
 {
@@ -42,4 +39,3 @@ void main(int argc, char *argv[])
         }
     }
 }
-

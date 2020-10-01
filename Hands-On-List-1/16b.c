@@ -3,12 +3,10 @@ Question: Write a program to perform mandatory locking.
     - Implement read lock 
 */
 
-// Imports for `fcntl`
-#include <unistd.h>
-#include <fcntl.h>
-// Additional imports for `open`
-#include <sys/types.h>
-#include <sys/stat.h>
+#include <unistd.h>    // Import for `fcntl`
+#include <fcntl.h>     // Import for `fcntl`, `open`
+#include <sys/types.h> // Import for `open`
+#include <sys/stat.h>  // Import for `open`
 
 void main(int argc, char *argv[])
 {
@@ -25,9 +23,9 @@ void main(int argc, char *argv[])
 
         // Defining lock paramaters
         lock.l_type = F_RDLCK;    // Write lock
-        lock.l_whence = SEEK_SET; // Start of the file
-        lock.l_start = 0;
-        lock.l_len = 0; // When set to 0, it locks the entire file
+        lock.l_whence = SEEK_SET; // Seek to start of the file
+        lock.l_start = 0;         // Lock from start of the file
+        lock.l_len = 0;           // When set to 0, it locks the entire file
         lock.l_pid = getpid();
 
         // Copying lock contents, used for checking if a lock has already been placed on the file

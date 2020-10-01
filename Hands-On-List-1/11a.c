@@ -1,13 +1,10 @@
 // Question: Write a program to open a file, duplicate the file descriptor and append the file with both the descriptors and check whether the file is updated properly or not using `dup`
 
-// Import required for `dup` system call
-#include <unistd.h>
-// Import required for `open` system call
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-// Import required for `perror`
-#include <stdio.h>
+#include <unistd.h>    // Import for `dup` system call
+#include <sys/types.h> // Import for `open` system call
+#include <sys/stat.h>  // Import for `open` system call
+#include <fcntl.h>     // Import for `open` system call
+#include <stdio.h>     // Import required for `perror` & `perror`
 
 void main(int argc, char *argv[])
 {

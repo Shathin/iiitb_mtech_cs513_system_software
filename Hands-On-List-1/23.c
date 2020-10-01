@@ -1,4 +1,4 @@
-// Question : Write a program to create a Zombie state of the running program.
+// Question : Write a program to create a Zombie state of the running program
 
 #include <sys/types.h> // Import for `fork` system call
 #include <unistd.h>    // Import for `fork` system call

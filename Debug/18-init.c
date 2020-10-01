@@ -2,6 +2,7 @@
     Question: Write a program to perform Record locking. 
     1. Implement write lock 
     2. Implement read lock
+
     Create three records in a file. Whenever you access a particular record, first lock it then modify/access to avoid race condition.
 */
 
@@ -47,13 +48,13 @@ void main()
             else
             {
                 // No contents in the file
-                records[0].recordNumber = 1;
+                records[0].recordName = "Record A - ";
                 records[0].someNumber = 0;
 
-                records[1].recordNumber = 2;
+                records[1].recordName = "Record B - ";
                 records[1].someNumber = 0;
 
-                records[2].recordNumber = 3;
+                records[2].recordName = "Record C - ";
                 records[2].someNumber = 0;
 
                 writeBytes = write(fileDescriptor, &records, sizeof(struct record) * 3);

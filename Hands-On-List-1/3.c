@@ -1,11 +1,9 @@
 // Question: Write a program to create a file and print the file descriptor value. Use creat() system call
 
-// Imports for `creat` system call
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-// Import for `printf` & `perror` function
-#include <stdio.h>
+#include <sys/types.h> // Import for `creat` system call
+#include <sys/stat.h>  // Import for `creat` system call
+#include <fcntl.h>     // Import for `creat` system call
+#include <stdio.h>     // Import for `printf` & `perror` function
 
 void main(int argc, char *argv[])
 {
@@ -18,7 +16,7 @@ void main(int argc, char *argv[])
     else
     {
         filename = argv[1];
-        
+
         fileDescriptor = creat(filename, S_IRWXU);
 
         if (fileDescriptor == -1)

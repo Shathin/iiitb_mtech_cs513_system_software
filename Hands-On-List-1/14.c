@@ -3,14 +3,11 @@
     2. Program should be able to identify any type of a file.
 */
 
-// Imports for using `stat` system call
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-// Import for `O_RDONLY` flag
-#include <fcntl.h>
-// Import for `printf`
-#include <stdio.h>
+#include <sys/types.h> // Imports for using `stat` system call
+#include <sys/stat.h>  // Imports for using `stat` system call
+#include <unistd.h>    // Imports for using `stat` system call
+#include <fcntl.h>     // Import for `O_RDONLY` flag
+#include <stdio.h>     // Import for `printf`
 
 void main(int argc, char *argv[])
 {

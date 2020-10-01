@@ -1,4 +1,4 @@
-// Structure of a record - Example: "10" meaning record 1 has some number 0
+// Structure of a record - Example: "10" means record 1 has some number 0
 struct record
 {
     int recordNumber;

@@ -1,4 +1,4 @@
-// Question : Write a program to create an orphan process.
+// Question : Write a program to create an orphan process
 
 #include <sys/types.h> // Import for `fork` system call
 #include <unistd.h>    // Import for `fork` system call

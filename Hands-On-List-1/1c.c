@@ -1,17 +1,14 @@
 // Question: Create a FIFO file using the `mkfifo` library function or `mknod` system call
 
-// Imports for using `mkfifo` library function
-#include <sys/types.h>
-#include <sys/stat.h>
-// Additional imports required for `mknod` system call
-#include <fcntl.h>
-#include <unistd.h> 
-// Import for using `printf` & `perror` function
-#include <stdio.h>
+#include <sys/types.h> // Import for `mkfifo` library function & `mknod` system call
+#include <sys/stat.h>  // Import for `mkfifo` library function & `mknod` system call
+#include <fcntl.h>     // Import for `mknod` system call
+#include <unistd.h>    // Import for `mknod` system call
+#include <stdio.h>     // Import for using `printf` & `perror` function
 
 void main()
 {
-    char *mkfifoName = "./mymkfifo"; // File name of FIFO file created using `mkfifo`
+    char *mkfifoName = "./mymkfifo";    // File name of FIFO file created using `mkfifo`
     char *mknodName = "./mymknod-fifo"; // File name of FIFO file created using `mknod`
 
     int mkfifo_status, mknod_status; // 0 -> Success, -1 -> Error

@@ -1,4 +1,4 @@
-// Question : Write a program to run a script at a specific time using a Daemon process.
+// Question : Write a program to run a script at a specific time using a Daemon process
 
 #include <time.h>      // Import for time related stuff
 #include <stdio.h>     // Import for `printf`

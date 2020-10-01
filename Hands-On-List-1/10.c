@@ -4,14 +4,11 @@
     2. Open the file with `od` and check the empty spaces in between the data.
 */
 
-// Imports for `open` and `close` system call
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-// Additional import required for `lseek` system call
-#include <unistd.h>
-// Import for `perror` and `printf` functions
-#include <stdio.h>
+#include <sys/stat.h>  // Import for `open` system call
+#include <fcntl.h>     // Import for `open` system call
+#include <sys/types.h> // Import for `open`, `lseek` system call
+#include <unistd.h>    // Import for `close`, `lseek` system call
+#include <stdio.h>     // Import for `perror` and `printf` functions
 
 void main(int argc, char *argv[])
 {
@@ -46,7 +43,7 @@ void main(int argc, char *argv[])
                 perror("Error while writing to the file!");
                 _exit(1);
             }
-            
+
             printf("Return value of lseek: %d\n", offset);
             close(fileDescriptor);
         }

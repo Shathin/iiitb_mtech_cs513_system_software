@@ -1,6 +1,6 @@
 // Question : Write a program to get the scheduling policy and modify the scheduling policy (SCHED_FIFO, SCHED_RR).
 
-#include <sched.h>
+#include <sched.h> // Import for `sched_getscheduler` and `sched_setscheduler`
 #include <sys/types.h> // Import for `getpid`
 #include <unistd.h>    // Import for `getpid`
 #include <stdio.h>     // Import for `perror` and `printf`

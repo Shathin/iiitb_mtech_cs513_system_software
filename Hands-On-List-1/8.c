@@ -1,13 +1,10 @@
 // Question : Write a program to open a file in read only mode, read line by line and display each line as it is read. Close the file when end of file is reached.
 
-// Imports for `open` system call.
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-// Import for `read` and `write` system call
-#include <unistd.h>
-// Import for `perrro` and `printf` functions
-#include <stdio.h>
+#include <sys/types.h> // Import for `open` system call.
+#include <sys/stat.h>  // Import for `open` system call.
+#include <fcntl.h>     // Import for `open` system call.
+#include <unistd.h>    // Import for `read` and `write` system call
+#include <stdio.h>     // Import for `perrro` and `printf` functions
 
 void main(int argc, char *argv[])
 {

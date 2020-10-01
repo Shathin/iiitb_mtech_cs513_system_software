@@ -52,13 +52,9 @@ void main()
                 if (terminatedChild == childC)
                 {
                     if (waitStatus == 0)
-                    {
                         printf("Child C has terminated with exit status = 0\n");
-                    }
                     else
-                    {
                         printf("Child has exited with exit status : %d\n", waitStatus);
-                    }
                 }
             }
         }

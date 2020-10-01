@@ -10,14 +10,12 @@
     9. Time of last modification 
     10. Time of last change
 */
-// Imports for using `stat` system call
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-// Import for `printf` & `perror` function
-#include <stdio.h>
-// Import for changing epoch timestamp to a more readable format
-#include <time.h>
+
+#include <sys/types.h> // Import for using `stat` system call
+#include <sys/stat.h>  // Import for using `stat` system call
+#include <unistd.h>    // Import for using `stat` system call
+#include <stdio.h>     // Import for `printf` & `perror` function
+#include <time.h>      // Import for changing epoch timestamp to a more readable format
 
 void main(int argc, char *argv[])
 {

@@ -1,16 +1,14 @@
 // Question: Create a hard link file using the `link` system call
 
-// Import required for using `link` & `write` system call
-#include <unistd.h>
-// Import required for using `perror`
-#include <stdio.h>
+#include <unistd.h> // Import for `link` & `write` system call
+#include <stdio.h>  // Import for `perror` & `printf` functions
 
 // argv[1] -> File path
 // argv[2] -> Hard Link File path
 void main(int argc, char *argv[])
 {
 
-    char *filePath; // File name of the source file
+    char *filePath;     // File name of the source file
     char *hardlinkPath; // File name of the hardlink file file
 
     int status; // 0 -> Success, -1 -> Error

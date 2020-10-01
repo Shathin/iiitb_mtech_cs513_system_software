@@ -1,16 +1,14 @@
 // Question: Create a soft link file using the `symlink` system call
 
-// Import required for using `link` & `write` system call
-#include <unistd.h>
-// Import required for using `perror`
-#include <stdio.h>
+#include <unistd.h> // Import for `symlink` & `write` system calls
+#include <stdio.h>  // Import for `perror` & `printf` functions
 
 // argv[1] -> File path
 // argv[2] -> Soft Link File path
 void main(int argc, char *argv[])
 {
 
-    char *filepath; // File name of the source file
+    char *filepath;     // File name of the source file
     char *softLinkPath; // File name of the symbolic link file
 
     int status; // 0 -> Success, -1 -> Error

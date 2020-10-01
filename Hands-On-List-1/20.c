@@ -11,7 +11,6 @@ void main(int argc, char *argv[])
         printf("Please pass the integer value to be added to the current nice value\n");
     else
     {
-
         newp = atoi(argv[1]);
         priority = nice(0); // Get the priorty by adding 0 to current priorty
         printf("Current priority: %d\n", priority);

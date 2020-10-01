@@ -1,13 +1,10 @@
 // Question: Write a program to copy file1 into file2 ($cp file1 file2).
 
-// Imports for `open`, `read` and `write` system call.
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-// Import for `read` and `write` system call
-#include <unistd.h>
-// Import for `perrro` and `printf` functions
-#include <stdio.h>
+#include <sys/types.h> // Import for `open`  system call.
+#include <sys/stat.h>  // Import for `open` system call.
+#include <fcntl.h>     // Import for `open`  system call.
+#include <unistd.h>    // Import for `read` and `write` system call
+#include <stdio.h>     // Import for `perrro` and `printf` functions
 
 // Drawback of program - If source file contains more than 1000 bytes all the contents will not be transferred to the destination
 void main(int argc, char *argv[])

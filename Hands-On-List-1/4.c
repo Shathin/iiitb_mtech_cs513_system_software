@@ -1,13 +1,10 @@
 // Question : Write a program to open an existing file with read write mode. Try O_EXCL flag also.
 
-// Imports for `open` system call
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-// Import for `printf` & `perror` function
-#include <stdio.h>
-// Import for `write` call
-#include <unistd.h>
+#include <sys/types.h> // Import for `open` system call
+#include <sys/stat.h>  // Import for `open` system call
+#include <fcntl.h>     // Import for `open` system call
+#include <unistd.h>    // Import for `write` call
+#include <stdio.h>     // Import for `printf` & `perror` function
 
 void main(int argc, char *argv[])
 {
@@ -16,9 +13,7 @@ void main(int argc, char *argv[])
     int fileDescriptor; // FD -> Success, -1 -> Failure
 
     if (argc != 2)
-    {
         write(STDOUT_FILENO, "Pass the file to be opened as the argument\n", 43);
-    }
     else
     {
         filename = argv[1];

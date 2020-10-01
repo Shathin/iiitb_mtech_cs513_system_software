@@ -1,4 +1,4 @@
-// Question : Write a program, open a file, call fork, and then write to the file by both the child as well as the parent processes. Check output of the file.
+// Question : Write a program, open a file, call fork, and then write to the file by both the child as well as the parent processes. Check output of the file
 
 #include <unistd.h>    // Import for `fork` system call
 #include <sys/types.h> // Import for `open`, `fork` system call

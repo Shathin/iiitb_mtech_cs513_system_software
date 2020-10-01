@@ -1,7 +1,6 @@
 // Question : Write a program to display the environmental variable of the user (use environ).
 
-// Import for NULL, environ
-#include <stdio.h>
+#include <stdio.h> // Import for `NULL`, `environ`
 
 extern char **environ;
 
