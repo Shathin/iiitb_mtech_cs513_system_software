@@ -7,14 +7,15 @@
 #include<stdio.h>
 
 void main() {
-    int child_pid, pid;
+    int childPid, pid;
     
     pid = getpid();
     
     printf("Parent PID: %d\n", pid);
     
-    child_pid = fork();
+    childPid = fork();
     
-    if(child_pid != 0)
-        printf("Child PID: %d\n", child_pid);
+    if(childPid != 0)
+        // Only parent will enter this branch
+        printf("Child PID: %d\n", childPid);
 }
