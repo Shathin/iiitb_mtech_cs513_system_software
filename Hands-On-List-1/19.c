@@ -8,16 +8,21 @@
 // Import for printf
 #include<stdio.h>
 
+#ifdef _MSC_VER
+#include <intrin.h>
+#else
+#include <x86intrin.h>
+#endif
+
 void main() {
     int start, end, pid;
     struct timeval timestamp;
     
-    gettimeofday(&timestamp, NULL);
-    start = timestamp.tv_usec;
+    start = __rdtsc();
     pid = getpid();
-    gettimeofday(&timestamp, NULL);
-    end = timestamp.tv_usec;
+    end = __rdtsc();
+
 
     printf("PID: %d\n", pid);
-    printf("Time taken : %d ms\n", (end-start));
+    printf("Time taken : %d \n", (end-start));
 }
