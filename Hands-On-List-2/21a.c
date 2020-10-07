@@ -6,9 +6,10 @@
 #include <unistd.h>    // Import for `write`
 #include <stdio.h>     // Import for `perror`
 
+#include "./21-global.h" // Import for FIFO file name
+
 void main()
 {
-    char *fifoOneName = "./fifoOne", *fifoTwoName = "./fifoTwo";
     int readBytes, writeBytes;
     int fifoOneFD, fifoTwoFD;
     char data[100];

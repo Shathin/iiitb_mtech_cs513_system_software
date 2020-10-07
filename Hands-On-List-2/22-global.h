@@ -1,0 +1,1 @@
+char *fifoName = "./22-fifo";
