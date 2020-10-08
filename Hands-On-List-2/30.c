@@ -16,7 +16,7 @@ void main()
     key_t shmKey; // Key used to create / access Shared Memory
     int shmIdentifier; // Identifier for the Shared Memory
     ssize_t shmSize = 20; // Size of the Shared Memory
-    int *shmPointer; 
+    char *shmPointer; 
 
     shmKey = ftok(".", 1);
 
@@ -39,7 +39,25 @@ void main()
         perror("Error while attaching address space!");
         _exit(0);
     }
+    getchar();
 
+    // Writing to the shared memory
+    sprintf(shmPointer, "Yolo");
+
+    getchar();
+
+    // Reading from the shared memory
+    printf("%s\n", shmPointer);
+
+    getchar();
+
+    // Dettach pointer to Shared Memory
+    shmdt(shmPointer);
+
+    getchar();
+
+    // Delete Shared Memory
+    shmctl(shmIdentifier, IPC_RMID, NULL);
     
 
 }
