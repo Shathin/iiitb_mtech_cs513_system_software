@@ -26,5 +26,5 @@ void main()
     end = __rdtsc();
 
     printf("PID: %d\n", pid);
-    printf("Time taken : %d \n", (end - start));
+    printf("Time taken : %d ns \n",  (int) ((end - start)/2.4));
 }

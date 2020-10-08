@@ -22,7 +22,7 @@ void main()
         _exit(0);
     }
 
-    writeBytes = write(fileDescriptor, "Hello there . . . ", 18);
+    writeBytes = write(fileDescriptor, "Hello there...", 14);
 
     if (writeBytes == -1)
         perror("Error while writing to FIFO!");

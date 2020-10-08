@@ -33,13 +33,11 @@ void main()
     timer.tv_sec = 10;
     timer.tv_usec = 0;
 
-    selectStatus = select(4, &readFDSet, NULL, NULL, &timer);
+    selectStatus = select(fileDescriptor + 1, &readFDSet, NULL, NULL, &timer);
 
     if (selectStatus == -1)
         perror("Error while calling for select!");
-    else if (selectStatus == 0)
-        printf("You didn't send any data for 10 seconds! :(\n");
-    else
+    else if (selectStatus)
     {
         readBytes = read(fileDescriptor, &data, 100);
 
@@ -48,6 +46,8 @@ void main()
         else
             printf("Data received : %s\n", data);
     }
+    else
+        printf("You didn't send any data for 10 seconds! :(\n");
 
     close(fileDescriptor);
 }
