@@ -14,6 +14,7 @@ void main()
     int fifoOneFD, fifoTwoFD;
     char data[100];
 
+
     fifoOneFD = open(fifoOneName, O_WRONLY);
     if (fifoOneFD == -1)
     {
@@ -27,6 +28,8 @@ void main()
         perror("Error while opening fifoTwo");
         _exit(0);
     }
+
+    
 
     writeBytes = write(fifoOneFD, "From 21a to 21b", 15);
 

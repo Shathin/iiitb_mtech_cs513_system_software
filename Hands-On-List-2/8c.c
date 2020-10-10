@@ -1,6 +1,6 @@
 // Question : Write a separate program using signal system call to catch `SIGFPE`
 
-#include <signal.h> // Import for `signal`
+#include <signal.h> // Import for `signal`, `raise`
 #include <stdio.h>  // Import for `printf`, `scanf` & `perror`
 #include <unistd.h> // Import for `_exit`
 
@@ -19,6 +19,5 @@ void main()
     if (signalStatus == SIG_ERR)
         perror("Error while assigning signal handler!");
     else
-        // Following line cause an arithemtic error
-        a = 1/0;
+        raise(SIGFPE); // Send a signal associated with floating point error
 }

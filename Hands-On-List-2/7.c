@@ -1,4 +1,4 @@
-// Question : Write a simple program to create three threads.
+// Question : Write a simple program to print the created thread IDs.
 
 #include <pthread.h> // Import for `pthread_create`
 #include <stdio.h>   // Import for `perror` & `printf`
@@ -18,7 +18,5 @@ void main()
 
     printf("Created thread ID: %lu\n", threadID);
 
-    // Wait for the threads to terminate and then terminate the main process
-    if(pthread_join(threadID, NULL))
-        perror("Error while waiting for thread");
+    pthread_exit(NULL);
 }

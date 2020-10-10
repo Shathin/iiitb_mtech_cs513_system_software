@@ -2,8 +2,9 @@
 
 #include <pthread.h> // Import for `pthread_create`, `pthread_self`
 #include <stdio.h>   // Import for `perror` & `printf`
+#include<unistd.h> // Import `sleep`
 
-void sampleFunction()
+void *sampleFunction(void *data)
 {
     printf("Running in thread: %lu\n", pthread_self());
 }
@@ -13,18 +14,14 @@ void main()
     pthread_t threadOne, threadTwo, threadThree;
 
     // Create three threads
-    if (pthread_create(&threadOne, NULL, (void *)sampleFunction, NULL))
+    if (pthread_create(&threadOne, NULL, sampleFunction, NULL))
         perror("Error while creating thread one");
-    if (pthread_create(&threadTwo, NULL, (void *)sampleFunction, NULL))
+    if (pthread_create(&threadTwo, NULL, sampleFunction, NULL))
         perror("Error while creating thread two");
-    if (pthread_create(&threadThree, NULL, (void *)sampleFunction, NULL))
+    if (pthread_create(&threadThree, NULL, sampleFunction, NULL))
         perror("Error while creating thread three");
 
+
     // Wait for the threads to terminate and then terminate the main process
-    if (pthread_join(threadOne, NULL))
-        perror("Error while waiting for thread one");
-    if (pthread_join(threadTwo, NULL))
-        perror("Error while waiting for thread two");
-    if (pthread_join(threadThree, NULL))
-        perror("Error while waiting for thread three");
+    pthread_exit(NULL);
 }

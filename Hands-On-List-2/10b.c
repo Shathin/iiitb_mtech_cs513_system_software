@@ -1,6 +1,6 @@
 // Question : Write a separate program using sigaction system call to catch `SIGINT` signal
 
-#include <signal.h> // Import for `sigaction`
+#include <signal.h> // Import for `sigaction`, `raise`
 #include <stdio.h>  // Import for `perror` & `printf`
 #include <unistd.h> // Import for `_exit`, `sleep`
 

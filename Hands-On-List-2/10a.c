@@ -1,6 +1,6 @@
 // Question : Write a separate program using sigaction system call to catch `SIGSEGV` signal
 
-#include <signal.h> // Import for `sigaction`
+#include <signal.h> // Import for `sigaction`, `raise`
 #include <stdio.h>  // Import for `perror` & `printf`
 #include <unistd.h> // Import for `_exit(0)`
 
@@ -24,7 +24,6 @@ void main()
         perror("Error while setting signal handler!");
     else
     {
-        // Following line generates a segmentation fault
-        a[100] = '1';
+        raise(SIGSEGV);
     }
 }

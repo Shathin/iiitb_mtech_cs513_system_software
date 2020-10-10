@@ -7,7 +7,6 @@
 void sampleFunction()
 {
     printf("\nSignal SIGINT has been caught!\n");
-    _exit(0);
 }
 
 void main()
@@ -25,6 +24,13 @@ void main()
 
     printf("SIGINT will now be caught!\n");
     signalStatus = signal(SIGINT, (void *)sampleFunction);
+    if (signalStatus == SIG_ERR)
+        perror("Error while assigning signal handler!");
+    else
+        sleep(5);
+
+    printf("SIGINT will now be caught using the default handler!\n");
+    signalStatus = signal(SIGINT, SIG_DFL);
     if (signalStatus == SIG_ERR)
         perror("Error while assigning signal handler!");
     else

@@ -1,6 +1,6 @@
 // Question : Write a separate program using sigaction system call to catch `SIGFPE` signal
 
-#include <signal.h> // Import for `sigaction`
+#include <signal.h> // Import for `sigaction`, `raise`
 #include <stdio.h>  // Import for `perror` & `printf`
 #include <unistd.h> // Import for `_exit`, `sleep`
 
@@ -23,5 +23,5 @@ void main()
     if (status == -1)
         perror("Error while setting signal handler!");
     else
-        a = 1 / 0;
+        raise(SIGFPE);
 }
