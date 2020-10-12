@@ -4,7 +4,7 @@
 #include <stdio.h>  // Import for `printf`, `scanf` & `perror`
 #include <unistd.h> // Import for `_exit`
 
-void sampleFunction()
+void callback()
 {
     printf("Signal SIGFPE has been caught!\n");
     _exit(0);
@@ -15,7 +15,7 @@ void main()
     int a;
     __sighandler_t signalStatus; // Determines the success of the `signal` call
 
-    signalStatus = signal(SIGFPE, (void *)sampleFunction);
+    signalStatus = signal(SIGFPE, (void *)callback);
     if (signalStatus == SIG_ERR)
         perror("Error while assigning signal handler!");
     else

@@ -6,7 +6,7 @@
 #include <unistd.h>    // Import for `write`
 #include <stdio.h>     // Import for `perror`
 
-#include "./21-global.h" // Import for FIFO file name
+#include "./21-global.h" // Import for FIFO file name & `init` function
 
 void main()
 {
@@ -14,6 +14,7 @@ void main()
     int fifoOneFD, fifoTwoFD;
     char data[100];
 
+    init();
 
     fifoOneFD = open(fifoOneName, O_WRONLY);
     if (fifoOneFD == -1)
@@ -29,13 +30,11 @@ void main()
         _exit(0);
     }
 
-    
-
     writeBytes = write(fifoOneFD, "From 21a to 21b", 15);
 
     if (writeBytes == -1)
         perror("Error while writing to FIFO fifoOne!");
-    
+
     close(fifoOneFD);
 
     readBytes = read(fifoTwoFD, &data, 100);
@@ -47,6 +46,6 @@ void main()
     }
 
     printf("Data from FIFO: %s\n", data);
-    
+
     close(fifoTwoFD);
 }

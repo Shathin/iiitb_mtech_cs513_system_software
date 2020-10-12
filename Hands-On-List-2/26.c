@@ -5,17 +5,18 @@
 #include <sys/msg.h>   // Import for `msgget` & `msgsnd`
 #include <stdio.h>     // Import for `perror` & `printf`
 #include <unistd.h>    // Import for `_exit`
+#include <errno.h>     // Import for `errno`
 
 void main()
 {
-    key_t queueKey;      // IPC (Message Queue) key
-    int queueIdentifier; // IPC (Message Queue) identifier
+    key_t queueKey;        // IPC (Message Queue) key
+    int queueIdentifier;   // IPC (Message Queue) identifier
     int messageSendStatus; // Determines success of `msgsnd` call
 
     struct msgbuf
     {
-        long mtype;      // Used to identify message type - should be > 0
-        int  someNumber; // Integer data
+        long mtype;     // Used to identify message type - should be > 0
+        int someNumber; // Integer data
     } data;
 
     queueKey = ftok(".", 1);
@@ -39,7 +40,8 @@ void main()
 
     messageSendStatus = msgsnd(queueIdentifier, &data, sizeof(data), 0);
 
-    if(messageSendStatus == -1) {
+    if (messageSendStatus == -1)
+    {
         perror("Error while sending message via Message Queue!");
         _exit(0);
     }

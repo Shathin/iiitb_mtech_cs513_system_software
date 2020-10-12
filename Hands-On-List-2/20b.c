@@ -13,19 +13,13 @@ void main()
     int readBytes;                // Number of bytes read from the FIFO file
     char data[100];               // Data from the FIFO file
 
-    printf("Here..\n");
-
     fileDescriptor = open(fifoFile, O_RDONLY);
-
-    printf("Here..\n");
 
     if (fileDescriptor == -1)
         perror("Error while opening the FIFO file!");
     else
     {
-        printf("Here..\n");
         readBytes = read(fileDescriptor, data, 100);
-        printf("Here..\n");
         if (readBytes == -1)
             perror("Error while reading from the FIFO file!");
         else

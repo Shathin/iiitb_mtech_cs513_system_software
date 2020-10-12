@@ -10,13 +10,13 @@ void print(char *text, rlim_t soft, rlim_t hard, char *unit)
 
     printf("\tSoft Limit: ");
     if (soft == RLIM_INFINITY)
-        printf("Infinite\n");
+        printf("Unlimited\n");
     else
         printf("%ld %s\n", soft, unit);
 
     printf("\tHard Limit: ");
     if (hard == RLIM_INFINITY)
-        printf("Infinite\n");
+        printf("Unlimited\n");
     else
         printf("%ld %s\n", hard, unit);
 

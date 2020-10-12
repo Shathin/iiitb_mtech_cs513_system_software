@@ -47,7 +47,7 @@ void main()
         perror("Error while connecting to server!");
         _exit(0);
     }
-    printf("Client to serrver connection successfully established!\n");
+    printf("Client to server connection successfully established!\n");
 
     // ========================= Client - Server communication =================
 
@@ -63,8 +63,6 @@ void main()
         perror("Error while writing to network via socket!");
     else
         printf("Data sent to server!");
-    
-    getchar();
 
     // =======================================================================
 

@@ -5,7 +5,7 @@
 #include <unistd.h>   // Import for `_exit`
 #include <stdio.h>    // Import `perror` & `printf`
 
-void sampleFunction()
+void callback()
 {
     printf("Signal SIGALRM has been caught!\n");
     _exit(0);
@@ -29,7 +29,7 @@ void main()
         perror("Error while setting an interval timer!");
 
     // Catch the SIGALRM signal
-    signalStatus = signal(SIGALRM, (void *)sampleFunction);
+    signalStatus = signal(SIGALRM, (void *)callback);
     if (signalStatus == SIG_ERR)
         perror("Error while catching signal!");
     else

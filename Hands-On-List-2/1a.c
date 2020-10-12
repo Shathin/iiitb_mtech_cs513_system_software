@@ -38,5 +38,5 @@ void main(int argc, char *argv[])
     if (timerStatus == -1)
         perror("Error while setting an interval timer!");
 
-    pause();
+    while(1);
 }

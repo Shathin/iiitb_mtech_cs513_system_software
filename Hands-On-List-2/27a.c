@@ -1,4 +1,4 @@
-// Question : Write a program to receive messages from the message queue with `0` as a flag 
+// Question : Write a program to receive messages from the message queue with `0` as a flag
 
 #include <sys/types.h> // Import for `ftok` `msgget` & `msgrcv`
 #include <sys/ipc.h>   // Import for `ftok` `msgget` & `msgrcv`
@@ -14,8 +14,8 @@ void main()
 
     struct msgbuf
     {
-        long mtype;      // Used to identify message type - should be > 0
-        int  someNumber; // Integer data
+        long mtype;     // Used to identify message type - should be > 0
+        int someNumber; // Integer data
     } data;
 
     queueKey = ftok(".", 1);
@@ -35,10 +35,12 @@ void main()
     }
 
     data.mtype = 1;
+    data.someNumber = 1;
 
     messageSize = msgrcv(queueIdentifier, &data, sizeof(data), data.mtype, 0);
 
-    if(messageSize == -1) {
+    if (messageSize == -1)
+    {
         perror("Error while sending getting via Message Queue!");
         _exit(0);
     }

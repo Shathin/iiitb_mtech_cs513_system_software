@@ -13,10 +13,10 @@
 
 void main()
 {
-    key_t shmKey; // Key used to create / access Shared Memory
-    int shmIdentifier; // Identifier for the Shared Memory
+    key_t shmKey;         // Key used to create / access Shared Memory
+    int shmIdentifier;    // Identifier for the Shared Memory
     ssize_t shmSize = 20; // Size of the Shared Memory
-    char *shmPointer; 
+    char *shmPointer;
 
     shmKey = ftok(".", 1);
 
@@ -25,39 +25,39 @@ void main()
         perror("Error while computing key!");
         _exit(0);
     }
-    
+
     shmIdentifier = shmget(shmKey, shmSize, IPC_CREAT | 0700); // Create the shared memory if it doesn't exist; if it exists use the existing one
 
-    if(shmIdentifier == -1) {
+    if (shmIdentifier == -1)
+    {
         perror("Error while getting Shared Memory!");
         _exit(0);
     }
 
-    shmPointer = shmat(shmIdentifier, (void *) 0, 0);
+    shmPointer = shmat(shmIdentifier, (void *)0, 0);
 
-    if(*shmPointer == -1) {
+    if (*shmPointer == -1)
+    {
         perror("Error while attaching address space!");
         _exit(0);
     }
+
+    printf("Press enter to write to the shared memory!\n");
     getchar();
 
-    // Writing to the shared memory
-    sprintf(shmPointer, "Yolo");
+    sprintf(shmPointer, "Yolo"); // Writing to the shared memory
 
+    printf("Press enter to read from the shared memory!\n");
     getchar();
 
-    // Reading from the shared memory
-    printf("%s\n", shmPointer);
+    printf("Data from shared memory: %s\n", shmPointer); // Reading from the shared memory
 
-    getchar();
+    printf("Detaching pointer to shared memory!\n");
+    shmdt(shmPointer); // Dettach pointer to Shared Memory
 
-    // Dettach pointer to Shared Memory
-    shmdt(shmPointer);
-
+    printf("Press enter to delete the shared memory!\n");
     getchar();
 
     // Delete Shared Memory
     shmctl(shmIdentifier, IPC_RMID, NULL);
-    
-
 }

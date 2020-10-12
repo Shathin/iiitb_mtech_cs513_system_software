@@ -39,6 +39,9 @@ void main()
         _exit(0);
     }
 
+    printf("Press enter to change the permissions!\n");
+    getchar();
+
     messageQueueInfo.msg_perm.mode = 0777;
 
     msgctlStatus = msgctl(queueIdentifier, IPC_SET, &messageQueueInfo);

@@ -4,6 +4,7 @@
 #include <sys/types.h> // Import for `mkfifo`
 #include <sys/stat.h>  // Import for `mkfifo`
 #include <stdio.h>     // Import for `perrore & `printf`
+#include <errno.h>     // Import for `errno`
 
 void main()
 {
@@ -14,7 +15,7 @@ void main()
     char *fifoName = "23-fifo";
     fifoStatus = mkfifo(fifoName, S_IRWXU);
 
-    if (fifoStatus == -1)
+    if (!(errno == EEXIST || fifoStatus != -1))
         perror("Error while creating FIFO file!");
     else
     {

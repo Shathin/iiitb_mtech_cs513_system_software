@@ -1,4 +1,4 @@
-// Question : Write a program to implement semaphore to protect any critical section - Rewrite the ticket number creation program using semaphore
+// Question : Write a program to implement semaphore to protect any critical section - Protect multiple pseudo resources (may be two) using counting semaphore 
 
 #include <sys/ipc.h>   // Import for `ftok`, `semget`, `semctl`
 #include <sys/sem.h>   // Import for `semget`, `semctl`

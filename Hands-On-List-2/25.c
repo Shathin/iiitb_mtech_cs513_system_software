@@ -14,6 +14,7 @@
 #include <sys/msg.h>   // Import for `msgget` & `msgctl`
 #include <stdio.h>     // Import for `perror` & `printf`
 #include <unistd.h>    // Import for `_exit`
+#include <errno.h>     // Import for `errno`
 
 void main()
 {
@@ -42,7 +43,8 @@ void main()
 
     msgctlStatus = msgctl(queueIdentifier, IPC_STAT, &messageQueueInfo);
 
-    if(msgctlStatus == -1) {
+    if (msgctlStatus == -1)
+    {
         perror("Error while getting Message Queue info!");
         _exit(0);
     }

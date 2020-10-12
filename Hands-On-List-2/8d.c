@@ -4,7 +4,7 @@
 #include <unistd.h>   // Import for `_exit`, `alarm`
 #include <stdio.h>    // Import `perror` & `printf`
 
-void sampleFunction()
+void callback()
 {
     printf("Signal SIGALRM has been caught!\n");
     _exit(0);
@@ -17,7 +17,7 @@ void main()
     alarm(1); // Set an alarm for 1s
 
     // Catch the SIGALRM signal
-    signalStatus = signal(SIGALRM, (void *)sampleFunction);
+    signalStatus = signal(SIGALRM, (void *)callback);
     if (signalStatus == SIG_ERR)
         perror("Error while catching signal!");
     else

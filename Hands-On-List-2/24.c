@@ -5,6 +5,7 @@
 #include <sys/msg.h>   // Import for `msgget`
 #include <stdio.h>     // Import for `perror` & `printf`
 #include <unistd.h>    // Import for `_exit`
+#include <errno.h>     // Import for `errno`
 
 void main()
 {

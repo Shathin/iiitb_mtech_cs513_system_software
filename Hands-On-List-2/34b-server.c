@@ -21,25 +21,21 @@
 #include <unistd.h>     // Import for `_exit`, `read`, `write`
 #include <pthread.h>    // Import for `pthread_create`
 
-struct connfd
-{
-    int fd;
-};
 
-void communicate(struct connfd *fd)
+void communicate(int *fd)
 {
 
     ssize_t readBytes, writeBytes;
     char dataFromClient[100];
     // ========================= Server - Client communication =================
 
-    writeBytes = write(fd->fd, "I'm the server!", 15);
+    writeBytes = write(*fd, "I'm the server!", 15);
     if (writeBytes == -1)
         perror("Error while writing to network via socket!");
     else
         printf("Data sent to client!\n");
 
-    readBytes = read(fd->fd, dataFromClient, 100);
+    readBytes = read(*fd, dataFromClient, 100);
     if (readBytes == -1)
         perror("Error while reading from network via socket!");
     else
@@ -47,7 +43,7 @@ void communicate(struct connfd *fd)
 
     // =======================================================================
 
-    close(fd->fd);
+    close(*fd);
 }
 
 void main()
@@ -97,9 +93,7 @@ void main()
             perror("Error while accepting a connection!");
         else
         {   
-            struct connfd fd = {connectionFileDescriptor};
-
-            if (pthread_create(&threadID, NULL, (void *)communicate, &fd))
+            if (pthread_create(&threadID, NULL, (void *)communicate, &connectionFileDescriptor))
                 perror("Error while creating thread");
         }
     }

@@ -18,6 +18,8 @@ void main()
     struct timeval timer;
     int selectStatus;
 
+    init();
+
     fileDescriptor = open(fifoName, O_NONBLOCK | O_RDONLY);
 
     if (fileDescriptor == -1)
