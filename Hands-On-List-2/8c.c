@@ -12,7 +12,6 @@ void callback()
 
 void main()
 {
-    int a;
     __sighandler_t signalStatus; // Determines the success of the `signal` call
 
     signalStatus = signal(SIGFPE, (void *)callback);

@@ -16,7 +16,7 @@ void main()
     key_t shmKey;         // Key used to create / access Shared Memory
     int shmIdentifier;    // Identifier for the Shared Memory
     ssize_t shmSize = 20; // Size of the Shared Memory
-    char *shmPointer;
+    char *shmPointer, *rdOnlyShmPointer;
 
     shmKey = ftok(".", 1);
 
@@ -33,7 +33,7 @@ void main()
         perror("Error while getting Shared Memory!");
         _exit(0);
     }
-
+    // ======================== 1 ========================
     shmPointer = shmat(shmIdentifier, (void *)0, 0);
 
     if (*shmPointer == -1)
@@ -52,12 +52,41 @@ void main()
 
     printf("Data from shared memory: %s\n", shmPointer); // Reading from the shared memory
 
-    printf("Detaching pointer to shared memory!\n");
-    shmdt(shmPointer); // Dettach pointer to Shared Memory
+    // ===================================================
 
+    // ======================== 2 ========================
+
+    rdOnlyShmPointer = shmat(shmIdentifier, (void *)0, SHM_RDONLY);
+    if (*rdOnlyShmPointer == -1)
+    {
+        perror("Error while attaching address space!");
+        _exit(0);
+    }
+    
+    // printf("Press enter to write to the shared memory!\n");
+    // getchar();
+
+    // The below line will cause a segmentation fault (uncomment to get the required output)
+    // sprintf(rdOnlyShmPointer, "Yolo"); // Writing to the shared memory
+
+    printf("Press enter to read from the shared memory!\n");
+    getchar();
+
+    printf("Data from shared memory: %s\n", rdOnlyShmPointer); // Reading from the shared memory
+
+    // ===================================================
+
+    // ======================== 3 ========================
+    printf("Detaching pointer to shared memory!\n");
+    shmdt(shmPointer);       // Dettach pointer to Shared Memory
+    shmdt(rdOnlyShmPointer); // Dettach pointer to Shared Memory
+    // ===================================================
+
+    // ======================== 4 ========================
     printf("Press enter to delete the shared memory!\n");
     getchar();
 
     // Delete Shared Memory
     shmctl(shmIdentifier, IPC_RMID, NULL);
+    // ===================================================
 }

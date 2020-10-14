@@ -63,6 +63,8 @@ void main()
         perror("Error while writing to network via socket!");
     else
         printf("Data sent to server!");
+
+    getchar();
     
     // =======================================================================
 
