@@ -10,7 +10,7 @@
 #include <string.h> // Import for string functions
 
 
-void connectionHandler(int socketFileDescriptor) // Handles the communication with the client
+void connection_handler(int socketFileDescriptor) // Handles the communication with the client
 {
     char readBuffer[1000], writeBuffer[100];
     ssize_t readBytes, writeBytes;
@@ -59,7 +59,7 @@ void main()
         _exit(0);
     }
 
-    connectionHandler(socketFileDescriptor);
+    connection_handler(socketFileDescriptor);
 
     close(socketFileDescriptor);
 }

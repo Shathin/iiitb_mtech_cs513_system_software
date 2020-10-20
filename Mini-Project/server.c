@@ -7,31 +7,17 @@
 #include <sys/socket.h> // Import for `socket`, `bind`, `listen`, `accept` functions
 #include <netinet/ip.h> // Import for `sockaddr_in` stucture
 
-#include <string.h> // Import for string functions
-#include<stdbool.h> // Import for `bool` data type
+#include <string.h>  // Import for string functions
+#include <stdbool.h> // Import for `bool` data type
+#include <stdlib.h>  // Import for `atoi` function
 
-#include "./server-text.h"
-#include "./db-schema/customer.h"
-#include "./db-schema/admin.h"
-#include "./db-schema/account.h"
+#include "./server-literals.c"
 
+#include "./common-functions.c"
+#include "./admin-functions.c"
+#include "./customer-functions.c"
 
-void connectionHandler(int connectionFileDescriptor); // Handles the communication with the client
-
-// ADMIN OPERATION
-bool add_customer(struct customer customerInfo);
-bool add_account(bool isCustomerExisting, struct customer customerInfo, struct account accountInfo);
-bool modify_customer(char* customerID, short int field);
-bool modify_account(int accountNumber, short int field);
-char* get_customer_info_by_id(int customerID);
-char* get_account_info(int accountNumber);
-// Experimental ADMIN OPERATION
-char* get_customer_info_by_name(char *customerName); 
-
-// CUSTOMER OPERATION
-
-
-
+void connection_handler(int connectionFileDescriptor); // Handles the communication with the client
 
 void main()
 {
@@ -64,49 +50,79 @@ void main()
         _exit(0);
     }
 
-    int clientSize = (int)sizeof(clientAddress);
-    connectionFileDescriptor = accept(socketFileDescriptor, (struct sockaddr *)&clientAddress, &clientSize);
-    if (connectionFileDescriptor == -1)
+    int clientSize;
+    while (1)
     {
-        perror("Error while connecting to client!");
-        close(socketFileDescriptor);
-        _exit(0);
-    }
+        if (!fork())
+        {
+            // Child will enter this branch
+            clientSize = (int)sizeof(clientAddress);
+            connectionFileDescriptor = accept(socketFileDescriptor, (struct sockaddr *)&clientAddress, &clientSize);
+            if (connectionFileDescriptor == -1)
+            {
+                perror("Error while connecting to client!");
+                close(socketFileDescriptor);
+                _exit(0);
+            }
 
-    connectionHandler(connectionFileDescriptor);
+            connection_handler(connectionFileDescriptor);
+        }
+    }
 
     close(socketFileDescriptor);
 }
 
-void connectionHandler(int connectionFileDescriptor)
+void connection_handler(int connectionFileDescriptor)
 {
+    char readBuffer[1000], writeBuffer[1000];
+    ssize_t readBytes, writeBytes;
+    int userChoice;
+    bool invalidChoice = false;
 
-    ssize_t writeBytes;
     writeBytes = write(connectionFileDescriptor, initialPrompt, strlen(initialPrompt));
     if (writeBytes == -1)
         perror("Error while sending first prompt to the user!");
-    else
+
+    do
     {
-        printf("Wrote: %ld bytes\n!", writeBytes);
-    }
-
-    /*char readBuffer[1000];
-    ssize_t readBytes, writeBytes;
-
-    writeBytes = write(connectionFileDescriptor, "Hello there General Kenobi\0", 26);
-    if(writeBytes == -1) {
-        perror("Error while writing to client!");
-    }
-    else 
-        printf("Data successfully sent to client!\n");
-    
-    readBytes = read(connectionFileDescriptor, readBuffer, sizeof(readBuffer));
-    if(readBytes == -1) {
-        perror("Error while reading data from client!");
-    } else if(readBytes == 0) 
-        printf("No data was sent by the client!\n");
-    else 
-        printf("Client says: %s\n", readBuffer);*/
+        readBytes = read(connectionFileDescriptor, readBuffer, sizeof(readBuffer));
+        if (readBytes == -1)
+        {
+            perror("Error while reading from client");
+            invalidChoice = true;
+        }
+        else if (readBytes == 0)
+        {
+            printf("No data was sent by the client");
+            invalidChoice = true;
+        }
+        else
+        {
+            userChoice = atoi(readBuffer);
+            switch (userChoice)
+            {
+            case 1:
+                // Admin
+                admin_operation_handler(connectionFileDescriptor);
+                break;
+            case 2:
+                // Customer
+                customer_operation_handler(connectionFileDescriptor);
+                break;
+            case 3:
+                // Exit
+                break;
+            default:
+                // Invalid Choice
+                invalidChoice = true;
+                break;
+            }
+        }
+    } while (invalidChoice);
 
     close(connectionFileDescriptor);
 }
+
+
+
+
