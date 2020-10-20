@@ -6,7 +6,8 @@
 #include "./db-schema/customer.h"
 #include "./db-schema/admin.h"
 #include "./db-schema/account.h"
-#include "./server-literals.c"
+#include "./server-literals.h"
+#include "./common-functions.h"
 
 // Function prototype ================================
 

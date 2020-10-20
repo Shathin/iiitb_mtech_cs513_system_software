@@ -9,30 +9,38 @@
 
 #include <string.h> // Import for string functions
 
-
 void connection_handler(int socketFileDescriptor) // Handles the communication with the client
 {
     char readBuffer[1000], writeBuffer[100];
     ssize_t readBytes, writeBytes;
 
-    readBytes = read(socketFileDescriptor, readBuffer, sizeof(readBuffer));
-    if (readBytes == -1)
-        perror("Error while reading data from server!");
-    else if (readBytes == 0)
-        printf("No data was sent by the server!\n");
-
-    while (readBytes > 0)
+    do
     {
-        printf("%s\n", readBuffer);
-
-        scanf("%[^\n]%*c", writeBuffer); // Take user input!
-
-        writeBytes = write(socketFileDescriptor, writeBuffer, sizeof(writeBuffer));
-        if (writeBytes == -1)
-            perror("Error while writing to server!");
-
+        bzero(readBuffer, sizeof(readBuffer)); // Empty the read buffer
         readBytes = read(socketFileDescriptor, readBuffer, sizeof(readBuffer));
-    }
+        if (readBytes == -1)
+            perror("Error while reading from client socket!");
+        else if (readBytes == 0)
+            printf("No error received from server! Closing the connection to the server now!\n");
+        else
+        {
+            printf("%s\n", readBuffer);
+
+            bzero(writeBuffer, sizeof(writeBuffer)); // Empty the write buffer
+
+            scanf("%[^\n]%*c", writeBuffer); // Take user input!
+
+            writeBytes = write(socketFileDescriptor, writeBuffer, strlen(writeBuffer));
+            if (writeBytes == -1)
+            {
+                perror("Error while writing to client socket!");
+                printf("Closing the connection to the server now!\n");
+                break;
+            }
+        }
+    } while (readBytes > 0);
+
+    close(socketFileDescriptor);
 }
 
 void main()
@@ -63,4 +71,3 @@ void main()
 
     close(socketFileDescriptor);
 }
-

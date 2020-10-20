@@ -5,12 +5,15 @@
 #include <sys/types.h> // Import for `open`, `lseek`
 #include <sys/stat.h>  // Import for `open`
 #include <fcntl.h>     // Import for `open`
+#include <stdlib.h>    // Import for `atoi`
 
 #include "./db-schema/customer.h"
 #include "./db-schema/admin.h"
 #include "./db-schema/account.h"
-#include "./server-literals.c"
+#include "./server-literals.h"
 
+#ifndef COMMON_FUNCTIONS
+#define COMMON_FUNCTIONS
 // Function prototype ================================
 bool login_handler(bool isAdmin, int connectionFileDescriptor);
 
@@ -24,41 +27,38 @@ char *get_account_info(int accountNumber);
 
 bool login_handler(bool isAdmin, int connectionFileDescriptor)
 {
-    ssize_t readBytes, writeBytes;
-    char loginIDBuffer[50], passwordBuffer[100];
-    bool isLoginSuccessful = false;
+    // printf("Login procedure has now begun!\n");
+
+    ssize_t readBytes, writeBytes;   // Number of bytes written to / read from the socket
+    char outputString[1000];         // A general buffer used to write to the socket
+    char loginID[50], password[100]; // A buffer used to store the incoming client's login ID and password
+    bool isLoginSuccessful = false;  // Determines success of the `login_handler` function
     struct admin admin;
     struct customer customer;
-    int ID;
+    int ID;             // Holds the customer's / admin's ID. Used to reference directly to the admin / customer information structure
     int fileDescriptor; // Holds the file descriptor to the admin or the customer file
 
-    if (isAdmin)
-    {
-        writeBytes = write(connectionFileDescriptor, alpWelcome, strlen(alpWelcome));
-        if (writeBytes <= 0)
-        {
-            perror("Error while sending admin welcome prompt!");
-            return isLoginSuccessful;
-        }
-    }
-    else
-    {
-        writeBytes = write(connectionFileDescriptor, clpWelcome, strlen(clpWelcome));
-        if (writeBytes <= 0)
-        {
-            perror("Error while sending customer welcome prompt!");
-            return isLoginSuccessful;
-        }
-    }
+    bzero(outputString, sizeof(outputString)); // Empty the outputString
 
-    writeBytes = write(connectionFileDescriptor, lpLogin, strlen(lpLogin));
+    // Get the welcome prompt for the respective type of client
+    if (isAdmin)
+        strcpy(outputString, alpWelcome);
+    else
+        strcpy(outputString, clpWelcome);
+
+    // Get the 'enter login ID' prompt
+    strcpy(outputString, "\n");
+    strcat(outputString, lpLogin);
+
+    writeBytes = write(connectionFileDescriptor, outputString, strlen(outputString));
     if (writeBytes <= 0)
     {
         perror("Error while sending loginID prompt!");
         return isLoginSuccessful;
     }
 
-    readBytes = read(connectionFileDescriptor, loginIDBuffer, sizeof(loginIDBuffer));
+    bzero(loginID, sizeof(loginID)); // Empty the loginID buffer
+    readBytes = read(connectionFileDescriptor, loginID, sizeof(loginID));
     if (readBytes <= 0)
     {
         perror("Error while receiving loginID!");
@@ -66,33 +66,38 @@ bool login_handler(bool isAdmin, int connectionFileDescriptor)
     }
 
     // Get the admin / customer ID
-    ID = atoi(strtok(loginIDBuffer, "-"));
+    ID = atoi(strtok(loginID, "-"));
 
-    // TODO : Search for admin / customer & get their data (structure)
+    // Search for admin / customer & get their data (struct)
     if (isAdmin)
     {
-        // TODO : Seek to ID'th admin record and get the record
         fileDescriptor = open("./db/admin", O_RDONLY);
-        lseek(fileDescriptor, SEEK_SET, (int) (ID*sizeof(admin)));
+        lseek(fileDescriptor, SEEK_SET, (int)(ID * sizeof(admin)));
         readBytes = read(fileDescriptor, &admin, sizeof(admin));
-        if(readBytes == -1) {
+        if (readBytes == -1)
+        {
             perror("Error while reading from admin file");
             return isLoginSuccessful;
-        } else if(readBytes == 0) {
+        }
+        else if (readBytes == 0)
+        {
+            printf("Credentials don't match!");
             write(connectionFileDescriptor, lpFailedCredentials, strlen(lpFailedCredentials));
             return isLoginSuccessful;
         }
     }
     else
     {
-        // TODO : Seek to ID'th customer record and get the record
         fileDescriptor = open("./db/customer", O_RDONLY);
-        lseek(fileDescriptor, SEEK_SET, (int) (ID*sizeof(admin)));
+        lseek(fileDescriptor, SEEK_SET, (int)(ID * sizeof(admin)));
         readBytes = read(fileDescriptor, &customer, sizeof(customer));
-        if(readBytes == -1) {
+        if (readBytes == -1)
+        {
             perror("Error while reading from customer file");
             return isLoginSuccessful;
-        } else if(readBytes == 0) {
+        }
+        else if (readBytes == 0)
+        {
             write(connectionFileDescriptor, lpFailedCredentials, strlen(lpFailedCredentials));
             return isLoginSuccessful;
         }
@@ -101,33 +106,45 @@ bool login_handler(bool isAdmin, int connectionFileDescriptor)
     writeBytes = write(connectionFileDescriptor, lpPassword, strlen(lpPassword));
     if (writeBytes <= 0)
     {
-        perror("Error while write password prompt!");
+        perror("Error while writing password prompt!");
         return isLoginSuccessful;
     }
 
-    readBytes = read(connectionFileDescriptor, passwordBuffer, sizeof(passwordBuffer));
+    bzero(password, sizeof(password));
+
+    readBytes = read(connectionFileDescriptor, password, sizeof(password));
     if (readBytes <= 0)
     {
         perror("Error while receiving password!");
         return isLoginSuccessful;
     }
 
-    if (isAdmin && !strcmp(passwordBuffer, admin.password))
+    if (isAdmin && !strcmp(password, admin.password))
     {
-        isLoginSuccessful = true;
+        isLoginSuccessful = true; // Successful login
 
-        writeBytes = write(connectionFileDescriptor, strcat(alpSuccessful, admin.adminName), strlen(alpSuccessful));
+        bzero(outputString, sizeof(outputString)); // Empty the outputString buffer
+
+        strcat(outputString, alpSuccessful);
+        strcat(outputString, admin.adminName);
+        strcat(outputString, "\nPress enter to continue!");
+
+        writeBytes = write(connectionFileDescriptor, outputString, strlen(outputString));
         if (writeBytes <= 0)
         {
             perror("Error while writing auth success prompt!");
             return isLoginSuccessful;
         }
     }
-    else if (!isAdmin && !strcmp(passwordBuffer, customer.password))
+    else if (!isAdmin && !strcmp(password, customer.password))
     {
-        isLoginSuccessful = true;
+        isLoginSuccessful = true; // Successful login
 
-        writeBytes = write(connectionFileDescriptor, strcat(clpSuccessful, customer.customerName), strlen(clpSuccessful));
+        strcat(outputString, clpSuccessful);
+        strcat(outputString, customer.customerName);
+        strcat(outputString, "\nPress enter to continue!");
+
+        writeBytes = write(connectionFileDescriptor, strcat(strcat(outputString, clpSuccessful), admin.adminName), strlen(outputString));
         if (writeBytes <= 0)
         {
             perror("Error while writing auth success prompt!");
@@ -144,7 +161,9 @@ bool login_handler(bool isAdmin, int connectionFileDescriptor)
         }
     }
 
-    return isLoginSuccessful; // Failed login
+    return isLoginSuccessful;
 }
 
 // ====================================================
+
+#endif

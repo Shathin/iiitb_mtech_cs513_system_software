@@ -11,11 +11,10 @@
 #include <stdbool.h> // Import for `bool` data type
 #include <stdlib.h>  // Import for `atoi` function
 
-#include "./server-literals.c"
+#include "./server-literals.h"
 
-#include "./common-functions.c"
-#include "./admin-functions.c"
-#include "./customer-functions.c"
+#include "./admin-functions.h"
+#include "./customer-functions.h"
 
 void connection_handler(int connectionFileDescriptor); // Handles the communication with the client
 
@@ -53,19 +52,18 @@ void main()
     int clientSize;
     while (1)
     {
-        if (!fork())
+        clientSize = (int)sizeof(clientAddress);
+        connectionFileDescriptor = accept(socketFileDescriptor, (struct sockaddr *)&clientAddress, &clientSize);
+        if (connectionFileDescriptor == -1)
         {
-            // Child will enter this branch
-            clientSize = (int)sizeof(clientAddress);
-            connectionFileDescriptor = accept(socketFileDescriptor, (struct sockaddr *)&clientAddress, &clientSize);
-            if (connectionFileDescriptor == -1)
-            {
-                perror("Error while connecting to client!");
-                close(socketFileDescriptor);
-                _exit(0);
-            }
-
-            connection_handler(connectionFileDescriptor);
+            perror("Error while connecting to client!");
+            close(socketFileDescriptor);
+        }
+        else
+        {
+            if (!fork())
+                // Child will enter this branch
+                connection_handler(connectionFileDescriptor);
         }
     }
 
@@ -74,6 +72,8 @@ void main()
 
 void connection_handler(int connectionFileDescriptor)
 {
+    printf("Client has connected to the server!\n");
+
     char readBuffer[1000], writeBuffer[1000];
     ssize_t readBytes, writeBytes;
     int userChoice;
@@ -85,6 +85,7 @@ void connection_handler(int connectionFileDescriptor)
 
     do
     {
+        bzero(readBuffer, sizeof(readBuffer));
         readBytes = read(connectionFileDescriptor, readBuffer, sizeof(readBuffer));
         if (readBytes == -1)
         {
@@ -99,6 +100,7 @@ void connection_handler(int connectionFileDescriptor)
         else
         {
             userChoice = atoi(readBuffer);
+            printf("The client has chosen : %d\n", userChoice);
             switch (userChoice)
             {
             case 1:
@@ -122,7 +124,3 @@ void connection_handler(int connectionFileDescriptor)
 
     close(connectionFileDescriptor);
 }
-
-
-
-

@@ -1,3 +1,6 @@
+#ifndef CUSTOMER
+#define CUSTOMER
+
 struct customer
 {
     int customerID;        // An auto-generated customer ID : 0, 1, 2, ....
@@ -9,3 +12,5 @@ struct customer
     char customer_age;     // Age of the customer
     int accounts[];        // List of account numbers that the customer owns
 };
+
+#endif
