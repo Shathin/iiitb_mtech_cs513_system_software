@@ -125,5 +125,5 @@ void connection_handler(int connectionFileDescriptor)
             }
         } while (invalidChoice);
     }
-    printf("Termination connection to client!\n");
+    printf("Terminating connection to client!\n");
 }

@@ -166,7 +166,7 @@ bool get_account_details(int connFD)
     bzero(writeBuffer, sizeof(writeBuffer));
     sprintf(writeBuffer, "Account Details - \n\tAccount Number : %d\n\tAccount Type : %s\n\tAccount Status : %s", account.accountNumber, (account.isRegularAccount ? "Regular" : "Joint"), (account.active) ? "Active" : "Deactived");
     if (account.active)
-        sprintf(writeBuffer, "\n\tAccount Balance:₹ %ld");
+        sprintf(writeBuffer, "\n\tAccount Balance:₹ %ld", account.balance);
 
     // TODO : Print customer names instead (requires seeking to the customer record and getting the data)
     sprintf(writeBuffer, "\n\tPrimary Owner ID: %d", account.owners[0]);

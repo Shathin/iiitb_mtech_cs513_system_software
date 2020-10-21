@@ -26,14 +26,43 @@ bool admin_operation_handler(int connFD)
         char readBuffer[1000], writeBuffer[1000]; // A buffer used for reading & writing to the client
 
         bzero(writeBuffer, sizeof(writeBuffer));
-        writeBytes = write(connFD, ADMIN_LOGIN_SUCCESS, strlen(ADMIN_LOGIN_SUCCESS));
+        strcpy(writeBuffer, ADMIN_LOGIN_SUCCESS);
+        strcat(writeBuffer, "%");
+        writeBytes = write(connFD, writeBuffer, strlen(writeBuffer));
         // TODO : Add error checking
+        writeBytes = write(connFD, ADMIN_MENU, strlen(ADMIN_MENU));
+        // TODO : Add error checking
+        readBytes = read(connFD, readBuffer, sizeof(readBuffer));
+        // TODO : Add error checking
+        int choice = atoi(readBuffer); // TODO : Handle erroneous input
+        switch (choice)
+        {
+        case 1:
+            get_customer_details(connFD, -1);
+            break;
+        case 2:
+            get_account_details(connFD);
+            break;
+        case 3:
+            add_account(connFD);
+            break;
+        case 4:
+            delete_account(connFD);
+            break;
+        case 5:
+            modify_customer_info(connFD);
+            break;
+        default:
+            return false;
+            break;
+        }
     }
     else
     {
         // ADMIN LOGIN FAILED
         return false;
     }
+    return true;
 }
 
 bool add_account(int connFD)
@@ -44,13 +73,14 @@ bool add_account(int connFD)
     struct Account newAccount, prevAccount;
 
     int accountFileDescriptor = open("../records/account.bank", O_RDONLY);
-    if (errno == EACCES)
+    if (errno == ENOENT)
     {
         // Customer file was never created
         newAccount.accountNumber = 0;
     }
     else if (accountFileDescriptor == -1)
     {
+        printf("ERROR: %d\n", errno);
         perror("Error while opening account file");
         return false;
     }
@@ -97,7 +127,7 @@ bool add_account(int connFD)
 
     bzero(writeBuffer, sizeof(writeBuffer));
     sprintf(writeBuffer, "%s%d", ADMIN_ADD_ACCOUNT_NUMBER, newAccount.accountNumber);
-    strcpy(writeBuffer, "%");
+    strcat(writeBuffer, "%");
     writeBytes = write(connFD, writeBuffer, sizeof(writeBuffer));
 
     return true;
@@ -111,7 +141,7 @@ int add_customer(int connFD, bool isPrimary)
     struct Customer newCustomer, previousCustomer;
 
     int customerFileDescriptor = open("../records/customer.bank", O_RDONLY);
-    if (errno == EACCES)
+    if (errno == ENOENT)
     {
         // Customer file was never created
         newCustomer.id = 0;
@@ -181,7 +211,7 @@ int add_customer(int connFD, bool isPrimary)
 
     bzero(writeBuffer, sizeof(writeBuffer));
     sprintf(writeBuffer, "%s%s-%d\n%s%s", ADMIN_ADD_CUSTOMER_AUTOGEN_LOGIN, newCustomer.name, newCustomer.id, ADMIN_ADD_CUSTOMER_AUTOGEN_PASSWORD, AUTOGEN_PASSWORD);
-    strcpy(writeBuffer, "%");
+    strcat(writeBuffer, "%");
     writeBytes = write(connFD, writeBuffer, strlen(writeBuffer));
     // TODO : Add error checking
 
@@ -247,7 +277,7 @@ bool delete_account(int connFD)
     else
         // Account has some money ask customer to withdraw it
         strcpy(writeBuffer, ADMIN_DEL_ACCOUNT_FAILURE);
-    strcpy(writeBuffer, "%");
+    strcat(writeBuffer, "%");
     writeBytes = write(connFD, writeBuffer, strlen(writeBuffer));
     return true;
 }
@@ -327,10 +357,11 @@ bool modify_customer_info(int connFD)
         perror("Error while opening customer file");
         return false;
     }
-    int offset = lseek(customerFileDescriptor, customerID * sizeof(struct Customer), SEEK_SET);
+    offset = lseek(customerFileDescriptor, customerID * sizeof(struct Customer), SEEK_SET);
     // TODO : Add error checking
-    struct flock lock = {F_WRLCK, SEEK_SET, offset, sizeof(struct Customer), getpid()};
-    int fcntlStatus = fcntl(customerFileDescriptor, F_SETLKW, &lock);
+    lock.l_type = F_WRLCK;
+    lock.l_start = offset;
+    fcntlStatus = fcntl(customerFileDescriptor, F_SETLKW, &lock);
     // TODO : Add error checking
     writeBytes = write(customerFileDescriptor, &customer, sizeof(struct Customer));
     // TODO : Add error checking

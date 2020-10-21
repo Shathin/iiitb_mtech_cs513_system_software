@@ -26,6 +26,9 @@
 #define ADMIN_LOGIN_WELCOME "Welcome dear admin! With great power comes great responsibility!\nEnter your credentials to unlock this power!"
 #define ADMIN_LOGIN_SUCCESS "Welcome superman!"
 
+// ADMIN MENU
+#define ADMIN_MENU "1. Get Customer Details\n2. Get Account Details\n3. Add Account\n4. Delete Account\n5. Modify Customer Information\nPress any other key to logout"
+
 // ADD CUSTOMER
 #define ADMIN_ADD_CUSTOMER_PRIMARY "Enter the details for the primary customer\n"
 #define ADMIN_ADD_CUSTOMER_SECONDARY "Enter the details for the secondary customer\n"
