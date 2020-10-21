@@ -61,8 +61,12 @@ void main()
         else
         {
             if (!fork())
+            {
                 // Child will enter this branch
                 connection_handler(connectionFileDescriptor);
+                close(connectionFileDescriptor);
+                _exit(0);
+            }
         }
     }
 
@@ -90,17 +94,16 @@ void connection_handler(int connectionFileDescriptor)
             if (readBytes == -1)
             {
                 perror("Error while reading from client");
-                invalidChoice = true;
+                invalidChoice = false;
             }
             else if (readBytes == 0)
             {
                 printf("No data was sent by the client");
-                invalidChoice = true;
+                invalidChoice = false;
             }
             else
             {
                 userChoice = atoi(readBuffer);
-                printf("The client has chosen : %d\n", userChoice);
                 switch (userChoice)
                 {
                 case 1:
@@ -122,6 +125,5 @@ void connection_handler(int connectionFileDescriptor)
             }
         } while (invalidChoice);
     }
-
-    close(connectionFileDescriptor);
+    printf("Termination connection to client!\n");
 }

@@ -9,6 +9,7 @@
 #include <sys/stat.h>  // Import for `open`
 #include <fcntl.h>     // Import for `open`
 #include <stdlib.h>    // Import for `atoi`
+#include <errno.h>     // Import for `errno`
 
 #include "../record-struct/account.h"
 #include "../record-struct/customer.h"
@@ -18,6 +19,8 @@
 // Function Prototypes =================================
 
 bool login_handler(bool isAdmin, int connFD);
+bool get_account_details(int connFD);
+bool get_customer_details(int connFD, int customerID);
 
 // =====================================================
 
@@ -65,7 +68,7 @@ bool login_handler(bool isAdmin, int connFD)
         int customerFileFD = open("../records/customer.bank", O_RDONLY);
         // TODO : Add error checking
 
-        off_t offset = lseek(customerFileFD, SEEK_SET, ID * sizeof(struct Customer));
+        off_t offset = lseek(customerFileFD, ID * sizeof(struct Customer), SEEK_SET);
         if (offset >= 0)
         {
 
@@ -121,6 +124,117 @@ bool login_handler(bool isAdmin, int connFD)
     }
 
     return false;
+}
+
+bool get_account_details(int connFD)
+{
+    ssize_t readBytes, writeBytes;            // Number of bytes read from / written to the socket
+    char readBuffer[1000], writeBuffer[1000]; // A buffer for reading from / writing to the socket
+
+    int accountNumber;
+    struct Account account;
+    int accountFileDescriptor;
+    struct flock lock = {F_RDLCK, SEEK_SET, 0, sizeof(struct Account), getpid()};
+
+    writeBytes = write(connFD, GET_ACCOUNT_NUMBER, strlen(GET_ACCOUNT_NUMBER));
+    // TODO : Add error checking
+
+    bzero(readBuffer, sizeof(readBuffer));
+    readBytes = read(connFD, readBuffer, sizeof(readBuffer));
+    // TODO : Add error checking
+
+    accountNumber = atoi(readBuffer);
+    // TODO : Add error checking
+
+    accountFileDescriptor = open("../records/account.bank", O_RDONLY);
+    // TODO : Add error checking
+    int offset = lseek(accountFileDescriptor, accountNumber * sizeof(struct Account), SEEK_SET);
+    // TODO : Add error checking
+    lock.l_start = offset;
+
+    // TODO : Check for any existing locks
+    int fcntlStatus = fcntl(accountFileDescriptor, F_SETLKW, &lock);
+    // TODO : Add error checking
+
+    readBytes = read(accountFileDescriptor, &account, sizeof(struct Account));
+    // TODO : Add error checking
+
+    lock.l_type = F_UNLCK;
+    fcntlStatus = fcntl(accountFileDescriptor, F_SETLK, &lock);
+    // TODO : Add error checking
+
+    bzero(writeBuffer, sizeof(writeBuffer));
+    sprintf(writeBuffer, "Account Details - \n\tAccount Number : %d\n\tAccount Type : %s\n\tAccount Status : %s", account.accountNumber, (account.isRegularAccount ? "Regular" : "Joint"), (account.active) ? "Active" : "Deactived");
+    if (account.active)
+        sprintf(writeBuffer, "\n\tAccount Balance:₹ %ld");
+
+    // TODO : Print customer names instead (requires seeking to the customer record and getting the data)
+    sprintf(writeBuffer, "\n\tPrimary Owner ID: %d", account.owners[0]);
+    if (account.owners[1] != -1)
+        sprintf(writeBuffer, "\n\tSecondary Owner ID: %d", account.owners[1]);
+
+    strcat(writeBuffer, "\n%");
+
+    writeBytes = write(connFD, writeBuffer, strlen(writeBuffer));
+    // TODO : Add error checking
+
+    bzero(readBuffer, sizeof(readBuffer));
+    readBytes = read(connFD, readBuffer, sizeof(readBuffer));
+    // TODO : Add error checking
+    return true;
+}
+
+bool get_customer_details(int connFD, int customerID)
+{
+    ssize_t readBytes, writeBytes;            // Number of bytes read from / written to the socket
+    char readBuffer[1000], writeBuffer[1000]; // A buffer for reading from / writing to the socket
+
+    struct Customer customer;
+    int customerFileDescriptor;
+    struct flock lock = {F_RDLCK, SEEK_SET, 0, sizeof(struct Account), getpid()};
+
+    if (customerID == -1)
+    {
+        writeBytes = write(connFD, GET_ACCOUNT_NUMBER, strlen(GET_ACCOUNT_NUMBER));
+        // TODO : Add error checking
+
+        bzero(readBuffer, sizeof(readBuffer));
+        readBytes = read(connFD, readBuffer, sizeof(readBuffer));
+        // TODO : Add error checking
+
+        customerID = atoi(readBuffer);
+        // TODO : Add error checking
+    }
+
+    customerFileDescriptor = open("../records/customer.bank", O_RDONLY);
+    // TODO : Add error checking
+    int offset = lseek(customerFileDescriptor, customerID * sizeof(struct Customer), SEEK_SET);
+    // TODO : Add error checking
+    lock.l_start = offset;
+
+    // TODO : Check for any existing locks
+    int fcntlStatus = fcntl(customerFileDescriptor, F_SETLKW, &lock);
+    // TODO : Add error checking
+
+    readBytes = read(customerFileDescriptor, &customer, sizeof(struct Account));
+    // TODO : Add error checking
+
+    lock.l_type = F_UNLCK;
+    fcntlStatus = fcntl(customerFileDescriptor, F_SETLK, &lock);
+    // TODO : Add error checking
+
+    bzero(writeBuffer, sizeof(writeBuffer));
+    sprintf(writeBuffer, "Customer Details - \n\tID : %d\n\tName : %s\n\tGender : %c\n\tAge: %d\n\tAccount Number : %d", customer.id, customer.name, customer.gender, customer.age, customer.account);
+
+    strcat(writeBuffer, "\n%");
+
+    writeBytes = write(connFD, writeBuffer, strlen(writeBuffer));
+    // TODO : Add error checking
+
+    bzero(readBuffer, sizeof(readBuffer));
+    readBytes = read(connFD, readBuffer, sizeof(readBuffer));
+    // TODO : Add error checking
+    return true;
 }
 
 #endif

@@ -1,4 +1,4 @@
-// Question : Write a program to execute `ls -l | wc`. Use `dup`
+// Question : Write a program to execute `ls -l | wc`. Use `fcntl`
 
 #include <unistd.h>    // Import for `pipe``, `fork`, `execl` & `fcntl`
 #include <sys/types.h> // Import `fork`

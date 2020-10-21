@@ -9,7 +9,9 @@
 
 #include <string.h> // Import for string functions
 
-void connectionHandler(int sockFD); // Handles the read & write operations to the server
+#include <errno.h>
+
+void connection_handler(int sockFD); // Handles the read & write operations to the server
 
 void main()
 {
@@ -24,7 +26,7 @@ void main()
     }
 
     serverAddress.sin_family = AF_INET;                // IPv4
-    serverAddress.sin_port = htons(8080);              // Server will listen to port 8080
+    serverAddress.sin_port = htons(8081);              // Server will listen to port 8080
     serverAddress.sin_addr.s_addr = htonl(INADDR_ANY); // Binds the socket to all interfaces
 
     connectStatus = connect(socketFileDescriptor, (struct sockaddr *)&serverAddress, sizeof(serverAddress));
@@ -39,7 +41,6 @@ void main()
 
     close(socketFileDescriptor);
 }
-
 // Handles the read & write operations w the server
 void connection_handler(int sockFD)
 {
@@ -54,8 +55,24 @@ void connection_handler(int sockFD)
             perror("Error while reading from client socket!");
         else if (readBytes == 0)
             printf("No error received from server! Closing the connection to the server now!\n");
+        else if(strchr(readBuffer, '%') != NULL) {
+            // Skip read from client
+            char tempBuffer[1000];
+            strncpy(tempBuffer, readBuffer, strlen(readBuffer)-1);
+            printf("%s\n", tempBuffer);
+        }
+        else if (strchr(readBuffer, '$') != NULL)
+        {
+            // Server sent an error message and is now closing it's end of the connection
+            char tempBuffer[1000];
+            strncpy(tempBuffer, readBuffer, strlen(readBuffer)-1);
+            printf("%s\n", tempBuffer);
+            printf("Closing the connection to the server now!\n");
+            break;
+        }
         else
         {
+
             printf("%s\n", readBuffer);
 
             bzero(writeBuffer, sizeof(writeBuffer)); // Empty the write buffer
