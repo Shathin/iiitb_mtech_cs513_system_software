@@ -11,11 +11,12 @@
 #include <stdbool.h> // Import for `bool` data type
 #include <stdlib.h>  // Import for `atoi` function
 
-#include "./server-constants.h"
-#include "./functions/admin.h"
-#include "./functions/customer.h"
+#include "./server-literals.h"
 
-void connection_handler(int connFD); // Handles the communication with the client
+#include "./admin-functions.h"
+#include "./customer-functions.h"
+
+void connection_handler(int connectionFileDescriptor); // Handles the communication with the client
 
 void main()
 {
@@ -78,50 +79,48 @@ void connection_handler(int connectionFileDescriptor)
     int userChoice;
     bool invalidChoice = false;
 
-    writeBytes = write(connectionFileDescriptor, INITAL_PROMPT, strlen(INITAL_PROMPT));
+    writeBytes = write(connectionFileDescriptor, initialPrompt, strlen(initialPrompt));
     if (writeBytes == -1)
         perror("Error while sending first prompt to the user!");
-    else
+
+    do
     {
-        do
+        bzero(readBuffer, sizeof(readBuffer));
+        readBytes = read(connectionFileDescriptor, readBuffer, sizeof(readBuffer));
+        if (readBytes == -1)
         {
-            bzero(readBuffer, sizeof(readBuffer));
-            readBytes = read(connectionFileDescriptor, readBuffer, sizeof(readBuffer));
-            if (readBytes == -1)
+            perror("Error while reading from client");
+            invalidChoice = true;
+        }
+        else if (readBytes == 0)
+        {
+            printf("No data was sent by the client");
+            invalidChoice = true;
+        }
+        else
+        {
+            userChoice = atoi(readBuffer);
+            printf("The client has chosen : %d\n", userChoice);
+            switch (userChoice)
             {
-                perror("Error while reading from client");
+            case 1:
+                // Admin
+                admin_operation_handler(connectionFileDescriptor);
+                break;
+            case 2:
+                // Customer
+                customer_operation_handler(connectionFileDescriptor);
+                break;
+            case 3:
+                // Exit
+                break;
+            default:
+                // Invalid Choice
                 invalidChoice = true;
+                break;
             }
-            else if (readBytes == 0)
-            {
-                printf("No data was sent by the client");
-                invalidChoice = true;
-            }
-            else
-            {
-                userChoice = atoi(readBuffer);
-                printf("The client has chosen : %d\n", userChoice);
-                switch (userChoice)
-                {
-                case 1:
-                    // Admin
-                    admin_operation_handler(connectionFileDescriptor);
-                    break;
-                case 2:
-                    // Customer
-                    customer_operation_handler(connectionFileDescriptor);
-                    break;
-                case 3:
-                    // Exit
-                    break;
-                default:
-                    // Invalid Choice
-                    invalidChoice = true;
-                    break;
-                }
-            }
-        } while (invalidChoice);
-    }
+        }
+    } while (invalidChoice);
 
     close(connectionFileDescriptor);
 }

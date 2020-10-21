@@ -102,6 +102,36 @@ bool add_account_handler(int connectionFileDescriptor)
     struct customer *customer;
     struct account *account;
 
+    short int isAccountRegular;
+    writeBytes = write(connectionFileDescriptor, acmAccountType, strlen(acmAccountType));
+    if (writeBytes <= 0)
+    {
+        perror("Error while writing account type request to client!");
+        return false;
+    }
+    do
+    {
+        bzero(readBuffer, sizeof(readBuffer));
+        readBytes = read(connectionFileDescriptor, readBuffer, sizeof(readBuffer));
+        if (readBytes <= 0)
+        {
+            perror("Error while reading account type response from client!");
+            return false;
+        }
+        isAccountRegular = atoi(readBuffer);
+        if (isAccountRegular == 0 || isAccountRegular == 1)
+            account->isAccountRegular = isAccountRegular;
+        else
+        {
+            writeBytes = write(connectionFileDescriptor, acmAccountTypeInvalid, strlen(acmAccountTypeInvalid));
+            if (writeBuffer <= 0)
+            {
+                perror("Error while writing acmAccountTypeInvalid message to client!");
+                return false;
+            }
+        }
+    } while (isAccountRegular != 0 || isAccountRegular != 1);
+
     bzero(writeBuffer, sizeof(writeBuffer));
 
     writeBytes = write(connectionFileDescriptor, acmCustomerExists, strlen(acmCustomerExists));
@@ -167,38 +197,6 @@ bool add_account_handler(int connectionFileDescriptor)
     else
     {
     }
-
-    short int isAccountRegular;
-    writeBytes = write(connectionFileDescriptor, acmAccountType, strlen(acmAccountType));
-    if (writeBytes <= 0)
-    {
-        perror("Error while writing account type request to client!");
-        return false;
-    }
-    do
-    {
-        bzero(readBuffer, sizeof(readBuffer));
-        readBytes = read(connectionFileDescriptor, readBuffer, sizeof(readBuffer));
-        if (readBytes <= 0)
-        {
-            perror("Error while reading account type response from client!");
-            return false;
-        }
-        isAccountRegular = atoi(readBuffer);
-        if (isAccountRegular == 0 || isAccountRegular == 1)
-            account->isAccountRegular = isAccountRegular;
-        else
-        {
-            writeBytes = write(connectionFileDescriptor, acmAccountTypeInvalid, strlen(acmAccountTypeInvalid));
-            if (writeBuffer <= 0)
-            {
-                perror("Error while writing acmAccountTypeInvalid message to client!");
-                return false;
-            }
-        }
-    } while (isAccountRegular != 0 || isAccountRegular != 1);
-
-    
 
     add_account(account);
 

@@ -47,7 +47,6 @@ void main(int argc, char *argv[])
             write(STDOUT_FILENO, "Error\n", 6);
     }
 }
-
 /*
 Alternate Way - 
 
