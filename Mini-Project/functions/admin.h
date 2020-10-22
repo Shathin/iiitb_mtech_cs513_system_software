@@ -20,7 +20,7 @@ bool modify_customer_info(int connFD);
 bool admin_operation_handler(int connFD)
 {
 
-    if (login_handler(true, connFD))
+    if (login_handler(true, connFD, NULL))
     {
         ssize_t writeBytes, readBytes;            // Number of bytes read from / written to the client
         char readBuffer[1000], writeBuffer[1000]; // A buffer used for reading & writing to the client
@@ -28,7 +28,6 @@ bool admin_operation_handler(int connFD)
         strcpy(writeBuffer, ADMIN_LOGIN_SUCCESS);
         while (1)
         {
-            printf("Entered main menu while loop\n");
             strcat(writeBuffer, "\n");
             strcat(writeBuffer, ADMIN_MENU);
             writeBytes = write(connFD, writeBuffer, strlen(writeBuffer));
@@ -53,7 +52,7 @@ bool admin_operation_handler(int connFD)
                 get_customer_details(connFD, -1);
                 break;
             case 2:
-                get_account_details(connFD);
+                get_account_details(connFD, NULL);
                 break;
             case 3:
                 add_account(connFD);
@@ -132,7 +131,6 @@ bool add_account(int connFD)
 
         newAccount.accountNumber = prevAccount.accountNumber + 1;
 
-        printf("*PREVIOUS Account number : %d\nNEW Account number : %d\n", prevAccount.accountNumber, newAccount.accountNumber );
     }
     writeBytes = write(connFD, ADMIN_ADD_ACCOUNT_TYPE, strlen(ADMIN_ADD_ACCOUNT_TYPE));
     if (writeBytes == -1)
@@ -239,7 +237,6 @@ int add_customer(int connFD, bool isPrimary, int newAccountNumber)
 
         newCustomer.id = previousCustomer.id + 1;
 
-        printf("PREVIOUS CUSTOMER ID : %d\nNEW CUSTOMER ID: %d\n", previousCustomer.id, newCustomer.id);
     }
 
     if (isPrimary)
@@ -337,7 +334,6 @@ int add_customer(int connFD, bool isPrimary, int newAccountNumber)
         perror("Error while creating / opening customer file!");
         return false;
     }
-    printf("CUSTOMER ACCOUNT : %d\n", newCustomer.account);
     writeBytes = write(customerFileDescriptor, &newCustomer, sizeof(newCustomer));
     if (writeBytes == -1)
     {
@@ -521,7 +517,6 @@ bool modify_customer_info(int connFD)
     readBytes = read(connFD, readBuffer, sizeof(readBuffer));
     if (readBytes == -1)
     {
-        printf("%s\n", readBuffer);
         perror("Error while reading customer ID from client!");
         return false;
     }

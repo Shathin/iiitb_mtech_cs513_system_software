@@ -75,6 +75,26 @@
 #define CUSTOMER_LOGIN_WELCOME "Welcome dear customer! Enter your credentials to gain access to your account!"
 #define CUSTOMER_LOGIN_SUCCESS "Welcome beloved customer!"
 
+// ADMIN MENU
+#define CUSTOMER_MENU "1. Get Customer Details\n2. Deposit Money\n3. Withdraw Money\n4. Get Balance\n5. Change Password\nPress any other key to logout"
+
+#define ACCOUNT_DEACTIVATED "It seems you're account has been deactivated!^"
+
+#define DEPOSIT_AMOUNT "How much is it that you want to add into your bank?"
+#define DEPOSIT_AMOUNT_INVALID "You seem to have passed an invalid amount!^"
+#define DEPOSIT_AMOUNT_SUCCESS "The specified amount has been successfully added to your bank account!^"
+
+#define WITHDRAW_AMOUNT "How much is it that you want to withdraw from your bank?"
+#define WITHDRAW_AMOUNT_INVALID "You seem to have either passed an invalid amount or you don't have enough money in your bank to withdraw the specified amount^"
+#define WITHDRAW_AMOUNT_SUCCESS "The specified amount has been successfully withdrawn from your bank account!^"
+
+#define PASSWORD_CHANGE_OLD_PASS "Enter your old password"
+#define PASSWORD_CHANGE_OLD_PASS_INVALID "The entered password doesn't seem to match with the old password"
+#define PASSWORD_CHANGE_NEW_PASS "Enter the new password"
+#define PASSWORD_CHANGE_NEW_PASS_RE "Reenter the new password"
+#define PASSWORD_CHANGE_NEW_PASS_INVALID "The new password and the reentered passwords don't seem to pass!^"
+#define PASSWORD_CHANGE_SUCCESS "Password successfully changed!^"
+
 // ====================================================
 
 

@@ -18,21 +18,22 @@
 
 // Function Prototypes =================================
 
-bool login_handler(bool isAdmin, int connFD);
-bool get_account_details(int connFD);
+bool login_handler(bool isAdmin, int connFD, struct Customer *ptrToCustomer);
+bool get_account_details(int connFD, struct Account *customerAccount);
 bool get_customer_details(int connFD, int customerID);
 
 // =====================================================
 
 // Function Definition =================================
 
-
-bool login_handler(bool isAdmin, int connFD)
+bool login_handler(bool isAdmin, int connFD, struct Customer *ptrToCustomerID)
 {
     ssize_t readBytes, writeBytes;            // Number of bytes written to / read from the socket
     char readBuffer[1000], writeBuffer[1000]; // Buffer for reading from / writing to the client
     char tempBuffer[1000];
     struct Customer customer;
+
+    int ID;
 
     bzero(readBuffer, sizeof(readBuffer));
     bzero(writeBuffer, sizeof(writeBuffer));
@@ -70,7 +71,10 @@ bool login_handler(bool isAdmin, int connFD)
     }
     else
     {
-        int ID = atoi(strtok(readBuffer, "-"));
+        bzero(tempBuffer, sizeof(tempBuffer));
+        strcpy(tempBuffer, readBuffer);
+        strtok(tempBuffer, "-");
+        ID = atoi(strtok(NULL, "-"));
 
         int customerFileFD = open(CUSTOMER_FILE, O_RDONLY);
         if (customerFileFD == -1)
@@ -82,7 +86,7 @@ bool login_handler(bool isAdmin, int connFD)
         off_t offset = lseek(customerFileFD, ID * sizeof(struct Customer), SEEK_SET);
         if (offset >= 0)
         {
-
+            printf("Inside\n");
             struct flock lock = {F_RDLCK, SEEK_SET, ID * sizeof(struct Customer), sizeof(struct Customer), getpid()};
 
             int lockingStatus = fcntl(customerFileFD, F_SETLKW, &lock);
@@ -102,8 +106,8 @@ bool login_handler(bool isAdmin, int connFD)
             lock.l_type = F_UNLCK;
             lockingStatus = fcntl(customerFileFD, F_SETLK, &lock);
 
-            if (strcmp(customer.password, readBuffer) == 0)
-                userFound == true;
+            if (strcmp(customer.login, readBuffer) == 0)
+                userFound = true;
 
             close(customerFileFD);
         }
@@ -139,7 +143,10 @@ bool login_handler(bool isAdmin, int connFD)
         else
         {
             if (strcmp(readBuffer, customer.password) == 0)
+            {
+                *ptrToCustomerID = customer;
                 return true;
+            }
         }
 
         bzero(writeBuffer, sizeof(writeBuffer));
@@ -154,7 +161,7 @@ bool login_handler(bool isAdmin, int connFD)
     return false;
 }
 
-bool get_account_details(int connFD)
+bool get_account_details(int connFD, struct Account *customerAccount)
 {
     ssize_t readBytes, writeBytes;            // Number of bytes read from / written to the socket
     char readBuffer[1000], writeBuffer[1000]; // A buffer for reading from / writing to the socket
@@ -165,15 +172,23 @@ bool get_account_details(int connFD)
     int accountFileDescriptor;
     struct flock lock = {F_RDLCK, SEEK_SET, 0, sizeof(struct Account), getpid()};
 
-    writeBytes = write(connFD, GET_ACCOUNT_NUMBER, strlen(GET_ACCOUNT_NUMBER));
-    // TODO : Add error checking
+    if (customerAccount == NULL)
+    {
 
-    bzero(readBuffer, sizeof(readBuffer));
-    readBytes = read(connFD, readBuffer, sizeof(readBuffer));
-    // TODO : Add error checking
+        writeBytes = write(connFD, GET_ACCOUNT_NUMBER, strlen(GET_ACCOUNT_NUMBER));
+        // TODO : Add error checking
 
-    accountNumber = atoi(readBuffer);
-    // TODO : Add error checking
+        bzero(readBuffer, sizeof(readBuffer));
+        readBytes = read(connFD, readBuffer, sizeof(readBuffer));
+        // TODO : Add error checking
+
+        accountNumber = atoi(readBuffer);
+        // TODO : Add error checking
+    }
+    else
+    {
+        accountNumber = customerAccount->accountNumber;
+    }
 
     accountFileDescriptor = open(ACCOUNT_FILE, O_RDONLY);
     if (accountFileDescriptor == -1)
@@ -216,6 +231,11 @@ bool get_account_details(int connFD)
     lock.l_type = F_UNLCK;
     fcntlStatus = fcntl(accountFileDescriptor, F_SETLK, &lock);
     // TODO : Add error checking
+
+    if(customerAccount != NULL) {
+        *customerAccount = account;
+        return true;
+    }
 
     bzero(writeBuffer, sizeof(writeBuffer));
     sprintf(writeBuffer, "Account Details - \n\tAccount Number : %d\n\tAccount Type : %s\n\tAccount Status : %s", account.accountNumber, (account.isRegularAccount ? "Regular" : "Joint"), (account.active) ? "Active" : "Deactived");
@@ -308,13 +328,15 @@ bool get_customer_details(int connFD, int customerID)
     lock.l_start = offset;
 
     int fcntlStatus = fcntl(customerFileDescriptor, F_SETLKW, &lock);
-    if(fcntlStatus == -1) {
+    if (fcntlStatus == -1)
+    {
         perror("Error while obtaining read lock on the Customer file!");
         return false;
     }
 
     readBytes = read(customerFileDescriptor, &customer, sizeof(struct Customer));
-    if(readBytes == -1) {
+    if (readBytes == -1)
+    {
         perror("Error reading customer record from file!");
         return false;
     }
@@ -323,13 +345,13 @@ bool get_customer_details(int connFD, int customerID)
     fcntlStatus = fcntl(customerFileDescriptor, F_SETLK, &lock);
 
     bzero(writeBuffer, sizeof(writeBuffer));
-    printf("ACCOUNT NUMBER : %d\n", customer.account);
     sprintf(writeBuffer, "Customer Details - \n\tID : %d\n\tName : %s\n\tGender : %c\n\tAge: %d\n\tAccount Number : %d\n\tLoginID : %s", customer.id, customer.name, customer.gender, customer.age, customer.account, customer.login);
 
     strcat(writeBuffer, "\n\nYou'll now be redirected to the main menu...^");
 
     writeBytes = write(connFD, writeBuffer, strlen(writeBuffer));
-    if(writeBytes == -1) {
+    if (writeBytes == -1)
+    {
         perror("Error writing customer info to client!");
         return false;
     }
