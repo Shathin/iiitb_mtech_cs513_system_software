@@ -1,9 +1,13 @@
 #ifndef CUSTOMER_FUNCTIONS
 #define CUSTOMER_FUNCTIONS
 
+
+
 // Function Prototypes =================================
 
 bool customer_operation_handler(int connFD);
+
+
 
 // =====================================================
 

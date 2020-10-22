@@ -11,7 +11,7 @@
 #include <stdbool.h> // Import for `bool` data type
 #include <stdlib.h>  // Import for `atoi` function
 
-#include "./server-constants.h"
+#include "./functions/server-constants.h"
 #include "./functions/admin.h"
 #include "./functions/customer.h"
 
@@ -82,7 +82,7 @@ void connection_handler(int connectionFileDescriptor)
     int userChoice;
     bool invalidChoice = false;
 
-    writeBytes = write(connectionFileDescriptor, INITAL_PROMPT, strlen(INITAL_PROMPT));
+    /*writeBytes = write(connectionFileDescriptor, INITAL_PROMPT, strlen(INITAL_PROMPT));
     if (writeBytes == -1)
         perror("Error while sending first prompt to the user!");
     else
@@ -124,6 +124,7 @@ void connection_handler(int connectionFileDescriptor)
                 }
             }
         } while (invalidChoice);
-    }
+    }*/
+    admin_operation_handler(connectionFileDescriptor);
     printf("Terminating connection to client!\n");
 }

@@ -1,15 +1,11 @@
-#include <stdio.h> // Import for `printf` & `perror` functions
-#include <errno.h> // Import for `errno` variable
-
+#include <stdio.h>      // Import for `printf` & `perror` functions
+#include <errno.h>      // Import for `errno` variable
 #include <fcntl.h>      // Import for `fcntl` functions
 #include <unistd.h>     // Import for `fork`, `fcntl`, `read`, `write`, `lseek, `_exit` functions
 #include <sys/types.h>  // Import for `socket`, `bind`, `listen`, `connect`, `fork`, `lseek` functions
 #include <sys/socket.h> // Import for `socket`, `bind`, `listen`, `connect` functions
 #include <netinet/ip.h> // Import for `sockaddr_in` stucture
-
-#include <string.h> // Import for string functions
-
-#include <errno.h>
+#include <string.h>     // Import for string functions
 
 void connection_handler(int sockFD); // Handles the read & write operations to the server
 
@@ -17,6 +13,7 @@ void main()
 {
     int socketFileDescriptor, connectStatus;
     struct sockaddr_in serverAddress;
+    struct sockaddr server;
 
     socketFileDescriptor = socket(AF_INET, SOCK_STREAM, 0);
     if (socketFileDescriptor == -1)
@@ -53,17 +50,22 @@ void connection_handler(int sockFD)
     {
         bzero(readBuffer, sizeof(readBuffer)); // Empty the read buffer
         bzero(tempBuffer, sizeof(tempBuffer));
-        // readBytes = read(sockFD, readBuffer, sizeof(readBuffer));
-        readBytes = recv(sockFD, readBuffer, sizeof(readBuffer), 0);
+        readBytes = read(sockFD, readBuffer, sizeof(readBuffer));
         if (readBytes == -1)
             perror("Error while reading from client socket!");
         else if (readBytes == 0)
             printf("No error received from server! Closing the connection to the server now!\n");
-        else if (strchr(readBuffer, '%') != NULL)
+        else if (strchr(readBuffer, '^') != NULL)
         {
             // Skip read from client
-            strncpy(tempBuffer, readBuffer, strlen(readBuffer) - 2);
+            strncpy(tempBuffer, readBuffer, strlen(readBuffer) - 1);
             printf("%s\n", tempBuffer);
+            writeBytes = write(sockFD, "^", strlen("^"));
+            if (writeBytes == -1)
+            {
+                perror("Error while writing to client socket!");
+                break;
+            }
         }
         else if (strchr(readBuffer, '$') != NULL)
         {
@@ -75,9 +77,8 @@ void connection_handler(int sockFD)
         }
         else
         {
-
             printf("%s\n", readBuffer);
-
+            
             bzero(writeBuffer, sizeof(writeBuffer)); // Empty the write buffer
 
             scanf("%[^\n]%*c", writeBuffer); // Take user input!
