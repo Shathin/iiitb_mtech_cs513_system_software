@@ -104,7 +104,7 @@ bool login_handler(bool isAdmin, int connFD, struct Customer *ptrToCustomerID)
             }
 
             lock.l_type = F_UNLCK;
-            lockingStatus = fcntl(customerFileFD, F_SETLK, &lock);
+            fcntl(customerFileFD, F_SETLK, &lock);
 
             if (strcmp(customer.login, readBuffer) == 0)
                 userFound = true;
@@ -170,37 +170,51 @@ bool get_account_details(int connFD, struct Account *customerAccount)
     int accountNumber;
     struct Account account;
     int accountFileDescriptor;
-    struct flock lock = {F_RDLCK, SEEK_SET, 0, sizeof(struct Account), getpid()};
 
     if (customerAccount == NULL)
     {
 
         writeBytes = write(connFD, GET_ACCOUNT_NUMBER, strlen(GET_ACCOUNT_NUMBER));
-        // TODO : Add error checking
+        if (writeBytes == -1)
+        {
+            perror("Error writing GET_ACCOUNT_NUMBER message to client!");
+            return false;
+        }
 
         bzero(readBuffer, sizeof(readBuffer));
         readBytes = read(connFD, readBuffer, sizeof(readBuffer));
-        // TODO : Add error checking
+        if (readBytes == -1)
+        {
+            perror("Error reading account number response from client!");
+            return false;
+        }
 
         accountNumber = atoi(readBuffer);
-        // TODO : Add error checking
     }
     else
-    {
         accountNumber = customerAccount->accountNumber;
-    }
 
     accountFileDescriptor = open(ACCOUNT_FILE, O_RDONLY);
     if (accountFileDescriptor == -1)
     {
-        perror("Error opening account file!");
+        // Account record doesn't exist
+        bzero(writeBuffer, sizeof(writeBuffer));
+        strcpy(writeBuffer, ACCOUNT_ID_DOESNT_EXIT);
+        strcat(writeBuffer, "^");
+        writeBytes = write(connFD, writeBuffer, strlen(writeBuffer));
+        if (writeBytes == -1)
+        {
+            perror("Error while writing ACCOUNT_ID_DOESNT_EXIT message to client!");
+            return false;
+        }
+        readBytes = read(connFD, readBuffer, sizeof(readBuffer)); // Dummy read
         return false;
     }
 
     int offset = lseek(accountFileDescriptor, accountNumber * sizeof(struct Account), SEEK_SET);
     if (errno == EINVAL)
     {
-        // Customer record doesn't exist
+        // Account record doesn't exist
         bzero(writeBuffer, sizeof(writeBuffer));
         strcpy(writeBuffer, ACCOUNT_ID_DOESNT_EXIT);
         strcat(writeBuffer, "^");
@@ -219,20 +233,27 @@ bool get_account_details(int connFD, struct Account *customerAccount)
         return false;
     }
 
-    lock.l_start = offset;
+    struct flock lock = {F_RDLCK, SEEK_SET, offset, sizeof(struct Account), getpid()};
 
-    // TODO : Check for any existing locks
-    int fcntlStatus = fcntl(accountFileDescriptor, F_SETLKW, &lock);
-    // TODO : Add error checking
+    int lockingStatus = fcntl(accountFileDescriptor, F_SETLKW, &lock);
+    if (lockingStatus == -1)
+    {
+        perror("Error obtaining read lock on account record!");
+        return false;
+    }
 
     readBytes = read(accountFileDescriptor, &account, sizeof(struct Account));
-    // TODO : Add error checking
+    if (readBytes == -1)
+    {
+        perror("Error reading account record from file!");
+        return false;
+    }
 
     lock.l_type = F_UNLCK;
-    fcntlStatus = fcntl(accountFileDescriptor, F_SETLK, &lock);
-    // TODO : Add error checking
+    fcntl(accountFileDescriptor, F_SETLK, &lock);
 
-    if(customerAccount != NULL) {
+    if (customerAccount != NULL)
+    {
         *customerAccount = account;
         return true;
     }
@@ -245,7 +266,6 @@ bool get_account_details(int connFD, struct Account *customerAccount)
         strcat(writeBuffer, tempBuffer);
     }
 
-    // TODO (Optional): Print customer names instead (requires seeking to the customer record and getting the data)
     sprintf(tempBuffer, "\n\tPrimary Owner ID: %d", account.owners[0]);
     strcat(writeBuffer, tempBuffer);
     if (account.owners[1] != -1)
@@ -257,11 +277,8 @@ bool get_account_details(int connFD, struct Account *customerAccount)
     strcat(writeBuffer, "\n^");
 
     writeBytes = write(connFD, writeBuffer, strlen(writeBuffer));
-    // TODO : Add error checking
+    readBytes = read(connFD, readBuffer, sizeof(readBuffer)); // Dummy read
 
-    bzero(readBuffer, sizeof(readBuffer));
-    readBytes = read(connFD, readBuffer, sizeof(readBuffer));
-    // TODO : Add error checking
     return true;
 }
 
@@ -278,14 +295,22 @@ bool get_customer_details(int connFD, int customerID)
     if (customerID == -1)
     {
         writeBytes = write(connFD, GET_CUSTOMER_ID, strlen(GET_CUSTOMER_ID));
-        // TODO : Add error checking
+        if (writeBytes == -1)
+        {
+            perror("Error while writing GET_CUSTOMER_ID message to client!");
+            return false;
+        }
 
         bzero(readBuffer, sizeof(readBuffer));
         readBytes = read(connFD, readBuffer, sizeof(readBuffer));
-        // TODO : Add error checking
+        if (readBytes == -1)
+        {
+            perror("Error getting customer ID from client!");
+            ;
+            return false;
+        }
 
         customerID = atoi(readBuffer);
-        // TODO : Add error checking
     }
 
     customerFileDescriptor = open(CUSTOMER_FILE, O_RDONLY);
@@ -327,8 +352,8 @@ bool get_customer_details(int connFD, int customerID)
     }
     lock.l_start = offset;
 
-    int fcntlStatus = fcntl(customerFileDescriptor, F_SETLKW, &lock);
-    if (fcntlStatus == -1)
+    int lockingStatus = fcntl(customerFileDescriptor, F_SETLKW, &lock);
+    if (lockingStatus == -1)
     {
         perror("Error while obtaining read lock on the Customer file!");
         return false;
@@ -342,7 +367,7 @@ bool get_customer_details(int connFD, int customerID)
     }
 
     lock.l_type = F_UNLCK;
-    fcntlStatus = fcntl(customerFileDescriptor, F_SETLK, &lock);
+    fcntl(customerFileDescriptor, F_SETLK, &lock);
 
     bzero(writeBuffer, sizeof(writeBuffer));
     sprintf(writeBuffer, "Customer Details - \n\tID : %d\n\tName : %s\n\tGender : %c\n\tAge: %d\n\tAccount Number : %d\n\tLoginID : %s", customer.id, customer.name, customer.gender, customer.age, customer.account, customer.login);

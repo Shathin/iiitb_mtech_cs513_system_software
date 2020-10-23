@@ -85,7 +85,7 @@ bool add_account(int connFD)
     struct Account newAccount, prevAccount;
 
     int accountFileDescriptor = open(ACCOUNT_FILE, O_RDONLY);
-    if ( accountFileDescriptor == -1 && errno == ENOENT)
+    if (accountFileDescriptor == -1 && errno == ENOENT)
     {
         // Account file was never created
         newAccount.accountNumber = 0;
@@ -105,8 +105,8 @@ bool add_account(int connFD)
         }
 
         struct flock lock = {F_RDLCK, SEEK_SET, offset, sizeof(struct Account), getpid()};
-        int fcntlStatus = fcntl(accountFileDescriptor, F_SETLKW, &lock);
-        if (fcntlStatus == -1)
+        int lockingStatus = fcntl(accountFileDescriptor, F_SETLKW, &lock);
+        if (lockingStatus == -1)
         {
             perror("Error obtaining read lock on Account record!");
             return false;
@@ -120,17 +120,11 @@ bool add_account(int connFD)
         }
 
         lock.l_type = F_UNLCK;
-        fcntlStatus = fcntl(accountFileDescriptor, F_SETLKW, &lock);
-        if (fcntlStatus == -1)
-        {
-            perror("Error releasing read lock on Account record!");
-            return false;
-        }
+        fcntl(accountFileDescriptor, F_SETLK, &lock);
 
         close(accountFileDescriptor);
 
         newAccount.accountNumber = prevAccount.accountNumber + 1;
-
     }
     writeBytes = write(connFD, ADMIN_ADD_ACCOUNT_TYPE, strlen(ADMIN_ADD_ACCOUNT_TYPE));
     if (writeBytes == -1)
@@ -191,7 +185,7 @@ int add_customer(int connFD, bool isPrimary, int newAccountNumber)
     struct Customer newCustomer, previousCustomer;
 
     int customerFileDescriptor = open(CUSTOMER_FILE, O_RDONLY);
-    if ( customerFileDescriptor == -1 && errno == ENOENT)
+    if (customerFileDescriptor == -1 && errno == ENOENT)
     {
         // Customer file was never created
         newCustomer.id = 0;
@@ -211,8 +205,8 @@ int add_customer(int connFD, bool isPrimary, int newAccountNumber)
         }
 
         struct flock lock = {F_RDLCK, SEEK_SET, offset, sizeof(struct Customer), getpid()};
-        int fcntlStatus = fcntl(customerFileDescriptor, F_SETLKW, &lock);
-        if (fcntlStatus == -1)
+        int lockingStatus = fcntl(customerFileDescriptor, F_SETLKW, &lock);
+        if (lockingStatus == -1)
         {
             perror("Error obtaining read lock on Customer record!");
             return false;
@@ -226,17 +220,11 @@ int add_customer(int connFD, bool isPrimary, int newAccountNumber)
         }
 
         lock.l_type = F_UNLCK;
-        fcntlStatus = fcntl(customerFileDescriptor, F_SETLK, &lock);
-        if (fcntlStatus == -1)
-        {
-            perror("Error releasing read lock on Customer record!");
-            return false;
-        }
+        fcntl(customerFileDescriptor, F_SETLK, &lock);
 
         close(customerFileDescriptor);
 
         newCustomer.id = previousCustomer.id + 1;
-
     }
 
     if (isPrimary)
@@ -380,14 +368,25 @@ bool delete_account(int connFD)
         return false;
     }
 
-    int accountNumber = atoi(readBuffer); // TODO : Handle erroneous input
+    int accountNumber = atoi(readBuffer);
 
     int accountFileDescriptor = open(ACCOUNT_FILE, O_RDONLY);
     if (accountFileDescriptor == -1)
     {
-        perror("Error while opening Account file!");
+        // Account record doesn't exist
+        bzero(writeBuffer, sizeof(writeBuffer));
+        strcpy(writeBuffer, ACCOUNT_ID_DOESNT_EXIT);
+        strcat(writeBuffer, "^");
+        writeBytes = write(connFD, writeBuffer, strlen(writeBuffer));
+        if (writeBytes == -1)
+        {
+            perror("Error while writing ACCOUNT_ID_DOESNT_EXIT message to client!");
+            return false;
+        }
+        readBytes = read(connFD, readBuffer, sizeof(readBuffer)); // Dummy read
         return false;
     }
+
 
     int offset = lseek(accountFileDescriptor, accountNumber * sizeof(struct Account), SEEK_SET);
     if (errno == EINVAL)
@@ -412,8 +411,8 @@ bool delete_account(int connFD)
     }
 
     struct flock lock = {F_RDLCK, SEEK_SET, offset, sizeof(struct Account), getpid()};
-    int fcntlStatus = fcntl(accountFileDescriptor, F_SETLKW, &lock);
-    if (fcntlStatus == -1)
+    int lockingStatus = fcntl(accountFileDescriptor, F_SETLKW, &lock);
+    if (lockingStatus == -1)
     {
         perror("Error obtaining read lock on Account record!");
         return false;
@@ -427,12 +426,7 @@ bool delete_account(int connFD)
     }
 
     lock.l_type = F_UNLCK;
-    fcntlStatus = fcntl(accountFileDescriptor, F_SETLK, &lock);
-    if (fcntlStatus == -1)
-    {
-        perror("Error releasing read lock on Account record!");
-        return false;
-    }
+    fcntl(accountFileDescriptor, F_SETLK, &lock);
 
     close(accountFileDescriptor);
 
@@ -458,8 +452,8 @@ bool delete_account(int connFD)
         lock.l_type = F_WRLCK;
         lock.l_start = offset;
 
-        int fcntlStatus = fcntl(accountFileDescriptor, F_SETLKW, &lock);
-        if (fcntlStatus == -1)
+        int lockingStatus = fcntl(accountFileDescriptor, F_SETLKW, &lock);
+        if (lockingStatus == -1)
         {
             perror("Error obtaining write lock on the Account file!");
             return false;
@@ -473,11 +467,7 @@ bool delete_account(int connFD)
         }
 
         lock.l_type = F_UNLCK;
-        fcntlStatus = fcntl(accountFileDescriptor, F_SETLK, &lock);
-        if (fcntlStatus == -1)
-        {
-            perror("Error releasing write lock on Account file!");
-        }
+        fcntl(accountFileDescriptor, F_SETLK, &lock);
 
         strcpy(writeBuffer, ADMIN_DEL_ACCOUNT_SUCCESS);
     }
@@ -505,7 +495,7 @@ bool modify_customer_info(int connFD)
     int customerID;
 
     off_t offset;
-    int fcntlStatus;
+    int lockingStatus;
 
     writeBytes = write(connFD, ADMIN_MOD_CUSTOMER_ID, strlen(ADMIN_MOD_CUSTOMER_ID));
     if (writeBytes == -1)
@@ -526,9 +516,20 @@ bool modify_customer_info(int connFD)
     int customerFileDescriptor = open(CUSTOMER_FILE, O_RDONLY);
     if (customerFileDescriptor == -1)
     {
-        perror("Error while opening customer file");
+        // Customer File doesn't exist
+        bzero(writeBuffer, sizeof(writeBuffer));
+        strcpy(writeBuffer, CUSTOMER_ID_DOESNT_EXIT);
+        strcat(writeBuffer, "^");
+        writeBytes = write(connFD, writeBuffer, strlen(writeBuffer));
+        if (writeBytes == -1)
+        {
+            perror("Error while writing CUSTOMER_ID_DOESNT_EXIT message to client!");
+            return false;
+        }
+        readBytes = read(connFD, readBuffer, sizeof(readBuffer)); // Dummy read
         return false;
     }
+    
     offset = lseek(customerFileDescriptor, customerID * sizeof(struct Customer), SEEK_SET);
     if (errno == EINVAL)
     {
@@ -554,8 +555,8 @@ bool modify_customer_info(int connFD)
     struct flock lock = {F_RDLCK, SEEK_SET, offset, sizeof(struct Customer), getpid()};
 
     // Lock the record to be read
-    fcntlStatus = fcntl(customerFileDescriptor, F_SETLKW, &lock);
-    if (fcntlStatus == -1)
+    lockingStatus = fcntl(customerFileDescriptor, F_SETLKW, &lock);
+    if (lockingStatus == -1)
     {
         perror("Couldn't obtain lock on customer record!");
         return false;
@@ -570,12 +571,7 @@ bool modify_customer_info(int connFD)
 
     // Unlock the record
     lock.l_type = F_UNLCK;
-    fcntlStatus = fcntl(customerFileDescriptor, F_SETLKW, &lock);
-    if (fcntlStatus == -1)
-    {
-        perror("Error while releasing lock on the customer record!");
-        return false;
-    }
+    fcntl(customerFileDescriptor, F_SETLK, &lock);
 
     close(customerFileDescriptor);
 
@@ -698,8 +694,8 @@ bool modify_customer_info(int connFD)
 
     lock.l_type = F_WRLCK;
     lock.l_start = offset;
-    fcntlStatus = fcntl(customerFileDescriptor, F_SETLKW, &lock);
-    if (fcntlStatus == -1)
+    lockingStatus = fcntl(customerFileDescriptor, F_SETLKW, &lock);
+    if (lockingStatus == -1)
     {
         perror("Error while obtaining write lock on customer record!");
         return false;
@@ -712,12 +708,7 @@ bool modify_customer_info(int connFD)
     }
 
     lock.l_type = F_UNLCK;
-    fcntlStatus = fcntl(customerFileDescriptor, F_SETLKW, &lock);
-    if (fcntlStatus == -1)
-    {
-        perror("Error while releasing write lock on customer record!");
-        return false;
-    }
+    fcntl(customerFileDescriptor, F_SETLKW, &lock);
 
     close(customerFileDescriptor);
 

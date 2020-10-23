@@ -15,8 +15,6 @@
 #include "./functions/admin.h"
 #include "./functions/customer.h"
 
-
-
 void connection_handler(int connFD); // Handles the communication with the client
 
 void main()
@@ -82,50 +80,36 @@ void connection_handler(int connectionFileDescriptor)
     char readBuffer[1000], writeBuffer[1000];
     ssize_t readBytes, writeBytes;
     int userChoice;
-    bool invalidChoice = false;
 
     writeBytes = write(connectionFileDescriptor, INITAL_PROMPT, strlen(INITAL_PROMPT));
     if (writeBytes == -1)
         perror("Error while sending first prompt to the user!");
     else
     {
-        do
+        bzero(readBuffer, sizeof(readBuffer));
+        readBytes = read(connectionFileDescriptor, readBuffer, sizeof(readBuffer));
+        if (readBytes == -1)
+            perror("Error while reading from client");
+        else if (readBytes == 0)
+            printf("No data was sent by the client");
+        else
         {
-            bzero(readBuffer, sizeof(readBuffer));
-            readBytes = read(connectionFileDescriptor, readBuffer, sizeof(readBuffer));
-            if (readBytes == -1)
+            userChoice = atoi(readBuffer);
+            switch (userChoice)
             {
-                perror("Error while reading from client");
-                invalidChoice = false;
+            case 1:
+                // Admin
+                admin_operation_handler(connectionFileDescriptor);
+                break;
+            case 2:
+                // Customer
+                customer_operation_handler(connectionFileDescriptor);
+                break;
+            default:
+                // Exit
+                break;
             }
-            else if (readBytes == 0)
-            {
-                printf("No data was sent by the client");
-                invalidChoice = false;
-            }
-            else
-            {
-                userChoice = atoi(readBuffer);
-                switch (userChoice)
-                {
-                case 1:
-                    // Admin
-                    admin_operation_handler(connectionFileDescriptor);
-                    break;
-                case 2:
-                    // Customer
-                    customer_operation_handler(connectionFileDescriptor);
-                    break;
-                case 3:
-                    // Exit
-                    break;
-                default:
-                    // Invalid Choice
-                    invalidChoice = true;
-                    break;
-                }
-            }
-        } while (invalidChoice);
+        }
     }
     printf("Terminating connection to client!\n");
 }

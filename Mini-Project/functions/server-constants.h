@@ -2,7 +2,7 @@
 #define SERVER_CONSTANTS
 
 
-#define INITAL_PROMPT "Welcome to Spooks bank!\nWho are you?\n1. Admin\t2. Customer\t3.Exit\nEnter the number corresponding to the choice!"
+#define INITAL_PROMPT "Welcome to Spooks bank!\nWho are you?\n1. Admin\t2. Customer\nPress any other number to exit\nEnter the number corresponding to the choice!"
 
 // ========== COMMON TEXT =============================
 
@@ -74,6 +74,8 @@
 // LOGIN WELCOME
 #define CUSTOMER_LOGIN_WELCOME "Welcome dear customer! Enter your credentials to gain access to your account!"
 #define CUSTOMER_LOGIN_SUCCESS "Welcome beloved customer!"
+
+#define CUSTOMER_LOGOUT "Logging you out now dear customer! Good bye!$"
 
 // ADMIN MENU
 #define CUSTOMER_MENU "1. Get Customer Details\n2. Deposit Money\n3. Withdraw Money\n4. Get Balance\n5. Change Password\nPress any other key to logout"
