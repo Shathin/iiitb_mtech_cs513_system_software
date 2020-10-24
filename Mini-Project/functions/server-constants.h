@@ -2,15 +2,16 @@
 #define SERVER_CONSTANTS
 
 
-#define INITAL_PROMPT "Welcome to Spooks bank!\nWho are you?\n1. Admin\t2. Customer\nPress any other number to exit\nEnter the number corresponding to the choice!"
+#define INITIAL_PROMPT "Welcome to Spooks bank!\nWho are you?\n1. Admin\t2. Customer\nPress any other number to exit\nEnter the number corresponding to the choice!"
 
 // ========== COMMON TEXT =============================
 
 // LOGIN
 #define LOGIN_ID "Enter your login ID"
-#define PASSWORD "Enter your password"
+#define PASSWORD "Enter your password \n# "
 #define INVALID_LOGIN "The login ID specified doesn't exist!$"
 #define INVALID_PASSWORD "The password specified doesn't match!$"
+#define SALT "666"
 
 // GET ACCOUNT DETAILS
 #define GET_ACCOUNT_NUMBER "Enter the account number of the account you're searching for"
@@ -80,7 +81,7 @@
 // ADMIN MENU
 #define CUSTOMER_MENU "1. Get Customer Details\n2. Deposit Money\n3. Withdraw Money\n4. Get Balance\n5. Change Password\nPress any other key to logout"
 
-#define ACCOUNT_DEACTIVATED "It seems you're account has been deactivated!^"
+#define ACCOUNT_DEACTIVATED "It seems your account has been deactivated!^"
 
 #define DEPOSIT_AMOUNT "How much is it that you want to add into your bank?"
 #define DEPOSIT_AMOUNT_INVALID "You seem to have passed an invalid amount!^"

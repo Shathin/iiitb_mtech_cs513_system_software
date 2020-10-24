@@ -314,7 +314,9 @@ int add_customer(int connFD, bool isPrimary, int newAccountNumber)
     sprintf(writeBuffer, "%d", newCustomer.id);
     strcat(newCustomer.login, writeBuffer);
 
-    strcpy(newCustomer.password, AUTOGEN_PASSWORD);
+    char hashedPassword[1000];
+    strcpy(hashedPassword, crypt(AUTOGEN_PASSWORD, SALT));
+    strcpy(newCustomer.password, hashedPassword);
 
     customerFileDescriptor = open(CUSTOMER_FILE, O_CREAT | O_APPEND | O_WRONLY, S_IRWXU);
     if (customerFileDescriptor == -1)

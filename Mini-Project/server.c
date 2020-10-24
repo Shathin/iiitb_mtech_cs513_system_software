@@ -81,7 +81,7 @@ void connection_handler(int connectionFileDescriptor)
     ssize_t readBytes, writeBytes;
     int userChoice;
 
-    writeBytes = write(connectionFileDescriptor, INITAL_PROMPT, strlen(INITAL_PROMPT));
+    writeBytes = write(connectionFileDescriptor, INITIAL_PROMPT, strlen(INITIAL_PROMPT));
     if (writeBytes == -1)
         perror("Error while sending first prompt to the user!");
     else

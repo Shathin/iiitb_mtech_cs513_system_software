@@ -329,7 +329,8 @@ bool get_balance(int connFD)
 bool change_password(int connFD)
 {
     ssize_t readBytes, writeBytes;
-    char readBuffer[1000], writeBuffer[1000];
+    char readBuffer[1000], writeBuffer[1000], hashedPassword[1000];
+
 
     char newPassword[1000];
 
@@ -359,7 +360,7 @@ bool change_password(int connFD)
         return false;
     }
 
-    if (strcmp(readBuffer, loggedInCustomer.password) == 0)
+    if (strcmp(crypt(readBuffer, SALT), loggedInCustomer.password) == 0)
     {
         // Password matches with old password
         writeBytes = write(connFD, PASSWORD_CHANGE_NEW_PASS, strlen(PASSWORD_CHANGE_NEW_PASS));
@@ -378,7 +379,7 @@ bool change_password(int connFD)
             return false;
         }
 
-        strcpy(newPassword, readBuffer);
+        strcpy(newPassword, crypt(readBuffer, SALT));
 
         writeBytes = write(connFD, PASSWORD_CHANGE_NEW_PASS_RE, strlen(PASSWORD_CHANGE_NEW_PASS_RE));
         if (writeBytes == -1)
@@ -396,7 +397,7 @@ bool change_password(int connFD)
             return false;
         }
 
-        if (strcmp(readBuffer, newPassword) == 0)
+        if (strcmp(crypt(readBuffer, SALT), newPassword) == 0)
         {
             // New & reentered passwords match
 

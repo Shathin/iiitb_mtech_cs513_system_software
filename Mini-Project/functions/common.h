@@ -135,14 +135,17 @@ bool login_handler(bool isAdmin, int connFD, struct Customer *ptrToCustomerID)
             return false;
         }
 
+        char hashedPassword[1000];
+        strcpy(hashedPassword, crypt(readBuffer, SALT));
+
         if (isAdmin)
         {
-            if (strcmp(readBuffer, ADMIN_PASSWORD) == 0)
+            if (strcmp(hashedPassword, ADMIN_PASSWORD) == 0)
                 return true;
         }
         else
         {
-            if (strcmp(readBuffer, customer.password) == 0)
+            if (strcmp(hashedPassword, customer.password) == 0)
             {
                 *ptrToCustomerID = customer;
                 return true;

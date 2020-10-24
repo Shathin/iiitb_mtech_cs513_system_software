@@ -77,11 +77,15 @@ void connection_handler(int sockFD)
         }
         else
         {
-            printf("%s\n", readBuffer);
-            
             bzero(writeBuffer, sizeof(writeBuffer)); // Empty the write buffer
 
-            scanf("%[^\n]%*c", writeBuffer); // Take user input!
+            if (strchr(readBuffer, '#') != NULL)
+                strcpy(writeBuffer, getpass(readBuffer));
+            else
+            {
+                printf("%s\n", readBuffer);
+                scanf("%[^\n]%*c", writeBuffer); // Take user input!
+            }
 
             writeBytes = write(sockFD, writeBuffer, strlen(writeBuffer));
             if (writeBytes == -1)
