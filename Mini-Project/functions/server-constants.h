@@ -11,7 +11,7 @@
 #define PASSWORD "Enter your password \n# "
 #define INVALID_LOGIN "The login ID specified doesn't exist!$"
 #define INVALID_PASSWORD "The password specified doesn't match!$"
-#define SALT "666"
+#define SALT_BAE "666"
 
 // GET ACCOUNT DETAILS
 #define GET_ACCOUNT_NUMBER "Enter the account number of the account you're searching for"

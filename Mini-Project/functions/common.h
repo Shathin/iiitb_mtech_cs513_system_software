@@ -136,7 +136,7 @@ bool login_handler(bool isAdmin, int connFD, struct Customer *ptrToCustomerID)
         }
 
         char hashedPassword[1000];
-        strcpy(hashedPassword, crypt(readBuffer, SALT));
+        strcpy(hashedPassword, crypt(readBuffer, SALT_BAE));
 
         if (isAdmin)
         {

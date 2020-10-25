@@ -155,6 +155,7 @@ bool deposit(int connFD)
             depositAmount = atol(readBuffer);
             if (depositAmount != 0)
             {
+                
                 account.balance += depositAmount;
 
                 int accountFileDescriptor = open(ACCOUNT_FILE, O_WRONLY);
@@ -360,7 +361,7 @@ bool change_password(int connFD)
         return false;
     }
 
-    if (strcmp(crypt(readBuffer, SALT), loggedInCustomer.password) == 0)
+    if (strcmp(crypt(readBuffer, SALT_BAE), loggedInCustomer.password) == 0)
     {
         // Password matches with old password
         writeBytes = write(connFD, PASSWORD_CHANGE_NEW_PASS, strlen(PASSWORD_CHANGE_NEW_PASS));
@@ -379,7 +380,7 @@ bool change_password(int connFD)
             return false;
         }
 
-        strcpy(newPassword, crypt(readBuffer, SALT));
+        strcpy(newPassword, crypt(readBuffer, SALT_BAE));
 
         writeBytes = write(connFD, PASSWORD_CHANGE_NEW_PASS_RE, strlen(PASSWORD_CHANGE_NEW_PASS_RE));
         if (writeBytes == -1)
@@ -397,7 +398,7 @@ bool change_password(int connFD)
             return false;
         }
 
-        if (strcmp(crypt(readBuffer, SALT), newPassword) == 0)
+        if (strcmp(crypt(readBuffer, SALT_BAE), newPassword) == 0)
         {
             // New & reentered passwords match
 
