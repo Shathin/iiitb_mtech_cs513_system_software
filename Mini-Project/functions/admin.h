@@ -54,13 +54,16 @@ bool admin_operation_handler(int connFD)
             case 2:
                 get_account_details(connFD, NULL);
                 break;
-            case 3:
-                add_account(connFD);
+            case 3: 
+                get_transaction_details(connFD, -1);
                 break;
             case 4:
-                delete_account(connFD);
+                add_account(connFD);
                 break;
             case 5:
+                delete_account(connFD);
+                break;
+            case 6:
                 modify_customer_info(connFD);
                 break;
             default:
@@ -152,6 +155,8 @@ bool add_account(int connFD)
 
     newAccount.active = true;
     newAccount.balance = 0;
+
+    memset(newAccount.transactions, -1, MAX_TRANSACTIONS * sizeof(int));
 
     accountFileDescriptor = open(ACCOUNT_FILE, O_CREAT | O_APPEND | O_WRONLY, S_IRWXU);
     if (accountFileDescriptor == -1)

@@ -15,13 +15,14 @@ bool deposit(int connFD);
 bool withdraw(int connFD);
 bool get_balance(int connFD);
 bool change_password(int connFD);
+bool lock_critical_section(struct sembuf *semOp);
 bool unlock_critical_section(struct sembuf *sem_op);
+void write_transaction_to_array(int *transactionArray, int ID);
+int write_transaction_to_file(int accountNumber, long int oldBalance, long int newBalance, bool operation);
 
 // =====================================================
 
 // Function Definition =================================
-
-// =====================================================
 
 bool customer_operation_handler(int connFD)
 {
@@ -72,14 +73,17 @@ bool customer_operation_handler(int connFD)
             }
             bzero(writeBuffer, sizeof(writeBuffer));
 
+            bzero(readBuffer, sizeof(readBuffer));
             readBytes = read(connFD, readBuffer, sizeof(readBuffer));
             if (readBytes == -1)
             {
                 perror("Error while reading client's choice for CUSTOMER_MENU");
                 return false;
             }
-
+            
+            // printf("READ BUFFER : %s\n", readBuffer);
             int choice = atoi(readBuffer);
+            // printf("CHOICE : %d\n", choice);
             switch (choice)
             {
             case 1:
@@ -95,6 +99,9 @@ bool customer_operation_handler(int connFD)
                 get_balance(connFD);
                 break;
             case 5:
+                get_transaction_details(connFD, loggedInCustomer.account);
+                break;
+            case 6:
                 change_password(connFD);
                 break;
             default:
@@ -122,16 +129,12 @@ bool deposit(int connFD)
     long int depositAmount = 0;
 
     // Lock the critical section
-    struct sembuf semOp = {0, -1, SEM_UNDO};
-    int semopStatus = semop(semIdentifier, &semOp, 1);
-    if (semopStatus == -1)
-    {
-        perror("Error while locking critical section");
-        return false;
-    }
+    struct sembuf semOp;
+    lock_critical_section(&semOp);
 
     if (get_account_details(connFD, &account))
     {
+        
         if (account.active)
         {
 
@@ -155,7 +158,10 @@ bool deposit(int connFD)
             depositAmount = atol(readBuffer);
             if (depositAmount != 0)
             {
-                
+
+                int newTransactionID = write_transaction_to_file(account.accountNumber, account.balance, account.balance + depositAmount, 1);
+                write_transaction_to_array(account.transactions, newTransactionID);
+
                 account.balance += depositAmount;
 
                 int accountFileDescriptor = open(ACCOUNT_FILE, O_WRONLY);
@@ -218,13 +224,8 @@ bool withdraw(int connFD)
     long int withdrawAmount = 0;
 
     // Lock the critical section
-    struct sembuf semOp = {0, -1, SEM_UNDO};
-    int semopStatus = semop(semIdentifier, &semOp, 1);
-    if (semopStatus == -1)
-    {
-        perror("Error while locking critical section");
-        return false;
-    }
+    struct sembuf semOp;
+    lock_critical_section(&semOp);
 
     if (get_account_details(connFD, &account))
     {
@@ -252,6 +253,10 @@ bool withdraw(int connFD)
 
             if (withdrawAmount != 0 && account.balance - withdrawAmount >= 0)
             {
+
+                int newTransactionID = write_transaction_to_file(account.accountNumber, account.balance, account.balance - withdrawAmount, 0);
+                write_transaction_to_array(account.transactions, newTransactionID);
+
                 account.balance -= withdrawAmount;
 
                 int accountFileDescriptor = open(ACCOUNT_FILE, O_WRONLY);
@@ -331,7 +336,6 @@ bool change_password(int connFD)
 {
     ssize_t readBytes, writeBytes;
     char readBuffer[1000], writeBuffer[1000], hashedPassword[1000];
-
 
     char newPassword[1000];
 
@@ -468,6 +472,20 @@ bool change_password(int connFD)
     return false;
 }
 
+bool lock_critical_section(struct sembuf *semOp)
+{
+    semOp->sem_flg = SEM_UNDO;
+    semOp->sem_op = -1;
+    semOp->sem_num = 0;
+    int semopStatus = semop(semIdentifier, semOp, 1);
+    if (semopStatus == -1)
+    {
+        perror("Error while locking critical section");
+        return false;
+    }
+    return true;
+}
+
 bool unlock_critical_section(struct sembuf *semOp)
 {
     semOp->sem_op = 1;
@@ -479,5 +497,69 @@ bool unlock_critical_section(struct sembuf *semOp)
     }
     return true;
 }
+
+void write_transaction_to_array(int *transactionArray, int ID)
+{
+    // Check if there's any free space in the array to write the new transaction ID
+    int iter = 0;
+    while (transactionArray[iter] != -1)
+        iter++;
+
+    if (iter >= MAX_TRANSACTIONS)
+    {
+        // No space
+        for (iter = 1; iter < MAX_TRANSACTIONS; iter++)
+            // Shift elements one step back discarding the oldest transaction
+            transactionArray[iter - 1] = transactionArray[iter];
+        transactionArray[iter - 1] = ID;
+    }
+    else
+    {
+        // Space available
+        transactionArray[iter] = ID;
+    }
+}
+
+int write_transaction_to_file(int accountNumber, long int oldBalance, long int newBalance, bool operation)
+{
+    struct Transaction newTransaction;
+    newTransaction.accountNumber = accountNumber;
+    newTransaction.oldBalance = oldBalance;
+    newTransaction.newBalance = newBalance;
+    newTransaction.operation = operation;
+    newTransaction.transactionTime = time(NULL);
+
+    ssize_t readBytes, writeBytes;
+
+    // // Lock the critical section
+    // struct sembuf semOp;
+    // lock_critical_section(&semOp);
+
+    int transactionFileDescriptor = open(TRANSACTION_FILE, O_CREAT | O_APPEND | O_RDWR, S_IRWXU);
+    // TODO : Add error checking
+
+    // Get most recent transaction number
+    off_t offset = lseek(transactionFileDescriptor, -sizeof(struct Transaction), SEEK_END);
+    if (offset >= 0)
+    {
+        // There exists at least one transaction record
+        struct Transaction prevTransaction;
+        readBytes = read(transactionFileDescriptor, &prevTransaction, sizeof(struct Transaction));
+        // TODO : Add error checking
+        newTransaction.transactionID = prevTransaction.transactionID + 1;
+    }
+    else
+        // No transaction records exist
+        newTransaction.transactionID = 0;
+
+    writeBytes = write(transactionFileDescriptor, &newTransaction, sizeof(struct Transaction));
+    // TODO : Add error checking
+
+    // unlock_critical_section(&semOp);
+
+    return newTransaction.transactionID;
+}
+
+// =====================================================
 
 #endif

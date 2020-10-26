@@ -13,6 +13,7 @@
 
 #include "../record-struct/account.h"
 #include "../record-struct/customer.h"
+#include "../record-struct/transaction.h"
 #include "./admin-credentials.h"
 #include "./server-constants.h"
 
@@ -86,7 +87,6 @@ bool login_handler(bool isAdmin, int connFD, struct Customer *ptrToCustomerID)
         off_t offset = lseek(customerFileFD, ID * sizeof(struct Customer), SEEK_SET);
         if (offset >= 0)
         {
-            printf("Inside\n");
             struct flock lock = {F_RDLCK, SEEK_SET, ID * sizeof(struct Customer), sizeof(struct Customer), getpid()};
 
             int lockingStatus = fcntl(customerFileFD, F_SETLKW, &lock);
@@ -204,6 +204,7 @@ bool get_account_details(int connFD, struct Account *customerAccount)
         bzero(writeBuffer, sizeof(writeBuffer));
         strcpy(writeBuffer, ACCOUNT_ID_DOESNT_EXIT);
         strcat(writeBuffer, "^");
+        perror("Error opening account file in get_account_details!");
         writeBytes = write(connFD, writeBuffer, strlen(writeBuffer));
         if (writeBytes == -1)
         {
@@ -215,12 +216,13 @@ bool get_account_details(int connFD, struct Account *customerAccount)
     }
 
     int offset = lseek(accountFileDescriptor, accountNumber * sizeof(struct Account), SEEK_SET);
-    if (errno == EINVAL)
+    if (offset == -1 && errno == EINVAL)
     {
         // Account record doesn't exist
         bzero(writeBuffer, sizeof(writeBuffer));
         strcpy(writeBuffer, ACCOUNT_ID_DOESNT_EXIT);
         strcat(writeBuffer, "^");
+        perror("Error seeking to account record in get_account_details!");
         writeBytes = write(connFD, writeBuffer, strlen(writeBuffer));
         if (writeBytes == -1)
         {
@@ -388,6 +390,111 @@ bool get_customer_details(int connFD, int customerID)
     return true;
 }
 
+bool get_transaction_details(int connFD, int accountNumber)
+{
+
+    ssize_t readBytes, writeBytes;                               // Number of bytes read from / written to the socket
+    char readBuffer[1000], writeBuffer[10000], tempBuffer[1000]; // A buffer for reading from / writing to the socket
+
+    struct Account account;
+
+    if (accountNumber == -1)
+    {
+        // Get the accountNumber
+        writeBytes = write(connFD, GET_ACCOUNT_NUMBER, strlen(GET_ACCOUNT_NUMBER));
+        if (writeBytes == -1)
+        {
+            perror("Error writing GET_ACCOUNT_NUMBER message to client!");
+            return false;
+        }
+
+        bzero(readBuffer, sizeof(readBuffer));
+        readBytes = read(connFD, readBuffer, sizeof(readBuffer));
+        if (readBytes == -1)
+        {
+            perror("Error reading account number response from client!");
+            return false;
+        }
+
+        account.accountNumber = atoi(readBuffer);
+    }
+    else
+        account.accountNumber = accountNumber;
+
+    if (get_account_details(connFD, &account))
+    {
+        int iter;
+
+        struct Transaction transaction;
+        struct tm transactionTime;
+
+        bzero(writeBuffer, sizeof(readBuffer));
+
+        int transactionFileDescriptor = open(TRANSACTION_FILE, O_RDONLY);
+        if (transactionFileDescriptor == -1)
+        {
+            perror("Error while opening transaction file!");
+            write(connFD, TRANSACTIONS_NOT_FOUND, strlen(TRANSACTIONS_NOT_FOUND));
+            read(connFD, readBuffer, sizeof(readBuffer)); // Dummy read
+            return false;
+        }
+
+        for (iter = 0; iter < MAX_TRANSACTIONS && account.transactions[iter] != -1; iter++)
+        {
+
+            int offset = lseek(transactionFileDescriptor, account.transactions[iter] * sizeof(struct Transaction), SEEK_SET);
+            if (offset == -1)
+            {
+                perror("Error while seeking to required transaction record!");
+                return false;
+            }
+
+            struct flock lock = {F_RDLCK, SEEK_SET, offset, sizeof(struct Transaction), getpid()};
+
+            int lockingStatus = fcntl(transactionFileDescriptor, F_SETLKW, &lock);
+            if (lockingStatus == -1)
+            {
+                perror("Error obtaining read lock on transaction record!");
+                return false;
+            }
+
+            readBytes = read(transactionFileDescriptor, &transaction, sizeof(struct Transaction));
+            if (readBytes == -1)
+            {
+                perror("Error reading transaction record from file!");
+                return false;
+            }
+
+            lock.l_type = F_UNLCK;
+            fcntl(transactionFileDescriptor, F_SETLK, &lock);
+
+            transactionTime = *localtime(&(transaction.transactionTime));
+
+            bzero(tempBuffer, sizeof(tempBuffer));
+            sprintf(tempBuffer, "Details of transaction %d - \n\t Date : %d:%d %d/%d/%d \n\t Operation : %s \n\t Balance - \n\t\t Before : %ld \n\t\t After : %ld \n\t\t Difference : %ld\n", (iter + 1), transactionTime.tm_hour, transactionTime.tm_min, transactionTime.tm_mday, transactionTime.tm_mon, transactionTime.tm_year, (transaction.operation ? "Deposit" : "Withdraw"), transaction.oldBalance, transaction.newBalance, (transaction.newBalance - transaction.oldBalance));
+
+            if (strlen(writeBuffer) == 0)
+                strcpy(writeBuffer, tempBuffer);
+            else
+                strcat(writeBuffer, tempBuffer);
+        }
+
+        close(transactionFileDescriptor);
+
+        if (strlen(writeBuffer) == 0)
+        {
+            write(connFD, TRANSACTIONS_NOT_FOUND, strlen(TRANSACTIONS_NOT_FOUND));
+            read(connFD, readBuffer, sizeof(readBuffer)); // Dummy read
+            return false;
+        }
+        else
+        {
+            strcat(writeBuffer, "^");
+            writeBytes = write(connFD, writeBuffer, strlen(writeBuffer));
+            read(connFD, readBuffer, sizeof(readBuffer)); // Dummy read
+        }
+    }
+}
 // =====================================================
 
 #endif

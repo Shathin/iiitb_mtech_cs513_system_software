@@ -26,6 +26,8 @@
 
 #define ACCOUNT_ID_DOESNT_EXIT "No account could be found for the given account number"
 
+#define TRANSACTIONS_NOT_FOUND "No transactions were performed on this account by the customer!^"
+
 // ====================================================
 
 // ========== ADMIN SPECIFIC TEXT======================
@@ -35,7 +37,7 @@
 #define ADMIN_LOGIN_SUCCESS "Welcome superman!"
 
 // ADMIN MENU
-#define ADMIN_MENU "1. Get Customer Details\n2. Get Account Details\n3. Add Account\n4. Delete Account\n5. Modify Customer Information\nPress any other key to logout"
+#define ADMIN_MENU "1. Get Customer Details\n2. Get Account Details\n3. Get Transaction details\n4. Add Account\n5. Delete Account\n6. Modify Customer Information\nPress any other key to logout"
 
 // ADD CUSTOMER
 #define ADMIN_ADD_CUSTOMER_PRIMARY "Enter the details for the primary customer\n"
@@ -79,7 +81,7 @@
 #define CUSTOMER_LOGOUT "Logging you out now dear customer! Good bye!$"
 
 // ADMIN MENU
-#define CUSTOMER_MENU "1. Get Customer Details\n2. Deposit Money\n3. Withdraw Money\n4. Get Balance\n5. Change Password\nPress any other key to logout"
+#define CUSTOMER_MENU "1. Get Customer Details\n2. Deposit Money\n3. Withdraw Money\n4. Get Balance\n5. Get Transaction information\n6. Change Password\nPress any other key to logout"
 
 #define ACCOUNT_DEACTIVATED "It seems your account has been deactivated!^"
 
@@ -103,5 +105,6 @@
 
 #define ACCOUNT_FILE "./records/account.bank"
 #define CUSTOMER_FILE "./records/customer.bank"
+#define TRANSACTION_FILE "./records/transactions.bank"
 
 #endif

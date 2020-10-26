@@ -1,7 +1,7 @@
 #ifndef ACCOUNT_RECORD
 #define ACCOUNT_RECORD
 
-#include "./transactions.h"
+#define MAX_TRANSACTIONS 10
 
 struct Account
 {
@@ -10,7 +10,7 @@ struct Account
     bool isRegularAccount; // 1 -> Regular account, 0 -> Joint account
     bool active;           // 1 -> Active, 0 -> Deactivated (Deleted)
     long int balance;      // Amount of money in the account
-    int transactions[10];  // A list of transaction IDs. Used to look up the transactions
+    int transactions[MAX_TRANSACTIONS];  // A list of transaction IDs. Used to look up the transactions. // -1 indicates unused space in array
 };
 
 #endif
