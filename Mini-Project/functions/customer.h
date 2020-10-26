@@ -531,12 +531,7 @@ int write_transaction_to_file(int accountNumber, long int oldBalance, long int n
 
     ssize_t readBytes, writeBytes;
 
-    // // Lock the critical section
-    // struct sembuf semOp;
-    // lock_critical_section(&semOp);
-
     int transactionFileDescriptor = open(TRANSACTION_FILE, O_CREAT | O_APPEND | O_RDWR, S_IRWXU);
-    // TODO : Add error checking
 
     // Get most recent transaction number
     off_t offset = lseek(transactionFileDescriptor, -sizeof(struct Transaction), SEEK_END);
@@ -545,7 +540,7 @@ int write_transaction_to_file(int accountNumber, long int oldBalance, long int n
         // There exists at least one transaction record
         struct Transaction prevTransaction;
         readBytes = read(transactionFileDescriptor, &prevTransaction, sizeof(struct Transaction));
-        // TODO : Add error checking
+
         newTransaction.transactionID = prevTransaction.transactionID + 1;
     }
     else
@@ -553,9 +548,6 @@ int write_transaction_to_file(int accountNumber, long int oldBalance, long int n
         newTransaction.transactionID = 0;
 
     writeBytes = write(transactionFileDescriptor, &newTransaction, sizeof(struct Transaction));
-    // TODO : Add error checking
-
-    // unlock_critical_section(&semOp);
 
     return newTransaction.transactionID;
 }
